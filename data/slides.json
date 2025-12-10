@@ -1,0 +1,26 @@
+[
+  {
+    "id": "1",
+    "title": "Bienvenue chez O'FAMM",
+    "description": "Stratégie digitale et médiastratégie au Togo - Accompagnement dans votre transformation digitale",
+    "image": "https://picsum.photos/1920/1080?random=1",
+    "ctaText": "Découvrir nos services",
+    "ctaLink": "/services"
+  },
+  {
+    "id": "2",
+    "title": "Accompagnement Professionnel",
+    "description": "Formation et développement pour jeunes et femmes en marketing digital et stratégie digitale",
+    "image": "https://picsum.photos/1920/1080?random=2",
+    "ctaText": "En savoir plus",
+    "ctaLink": "/about"
+  },
+  {
+    "id": "3",
+    "title": "Women in Tech 2024",
+    "description": "Lauréate de Women in Tech 2024 - Excellence reconnue dans le domaine de la technologie et du digital",
+    "image": "https://picsum.photos/1920/1080?random=3",
+    "ctaText": "Voir nos réalisations",
+    "ctaLink": "/realisations"
+  }
+]

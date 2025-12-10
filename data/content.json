@@ -1,0 +1,23 @@
+{
+  "about": {
+    "title": "À propos d'O'FAMM",
+    "content": "O'FAMM, ou Obé Mawussé Fantodji, est une femme data commerciale et médiastratégiste au Togo, reconnue pour son expertise en stratégie digitale et en prospection. Elle est la fondatrice de O'FAMM, une organisation qui accompagne des jeunes et des femmes dans leur développement professionnel et leur autonomie grâce à des programmes de formation et de marketing digital. O'FAMM a également été lauréate de Women in Tech 2024 et a lancé plusieurs initiatives pour soutenir la jeune génération en Afrique."
+  },
+  "services": [
+    {
+      "id": "1",
+      "title": "Stratégie Digitale",
+      "description": "Accompagnement dans votre transformation digitale avec des stratégies sur mesure."
+    },
+    {
+      "id": "2",
+      "title": "Médiastratégie",
+      "description": "Optimisation de votre présence médiatique et de votre communication."
+    },
+    {
+      "id": "3",
+      "title": "Formation & Accompagnement",
+      "description": "Programmes de formation pour jeunes et femmes en marketing digital."
+    }
+  ]
+}
