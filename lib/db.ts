@@ -163,6 +163,60 @@ export async function initDatabase() {
       )
     `);
 
+    // Create impacts table
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS impacts (
+        id SERIAL PRIMARY KEY,
+        continent VARCHAR(255),
+        pays VARCHAR(255),
+        ville VARCHAR(255),
+        description TEXT,
+        image VARCHAR(500),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // Create distinctions table
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS distinctions (
+        id SERIAL PRIMARY KEY,
+        title VARCHAR(255) NOT NULL,
+        description TEXT,
+        image VARCHAR(500),
+        date VARCHAR(100),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // Create produits table
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS produits (
+        id SERIAL PRIMARY KEY,
+        title VARCHAR(255) NOT NULL,
+        description TEXT,
+        image VARCHAR(500),
+        prix VARCHAR(100),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // Create reseaux_sociaux table
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS reseaux_sociaux (
+        id SERIAL PRIMARY KEY,
+        facebook VARCHAR(500),
+        twitter VARCHAR(500),
+        instagram VARCHAR(500),
+        linkedin VARCHAR(500),
+        youtube VARCHAR(500),
+        tiktok VARCHAR(500),
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
     console.log("Database tables initialized successfully");
   } catch (error) {
     console.error("Error initializing database:", error);
