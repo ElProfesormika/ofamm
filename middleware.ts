@@ -6,6 +6,11 @@ export async function middleware(request: NextRequest) {
   const token = request.cookies.get("admin_token")?.value;
   const { pathname } = request.nextUrl;
 
+  // Ne pas interférer avec les routes API
+  if (pathname.startsWith("/api/")) {
+    return NextResponse.next();
+  }
+
   // Protect admin routes except the login page to avoid redirect loops
   const isAdminProtected =
     pathname.startsWith("/admin") && pathname !== "/admin/login";

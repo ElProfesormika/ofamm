@@ -47,21 +47,53 @@ export default function ReseauxSociauxAdminPage() {
   };
 
   const handleSave = async () => {
-    if (!content) return;
+    if (!content) {
+      console.error("Admin: No content to save");
+      return;
+    }
     const nextContent = { ...content, reseauxSociaux };
     try {
+      console.log("Admin: Sending PUT request to /api/content");
       const response = await fetch("/api/content", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify(nextContent),
       });
+      
+      console.log("Admin: Response status:", response.status);
+      const contentType = response.headers.get("content-type");
+      const responseText = await response.text();
+      
       if (response.ok) {
-        setContent(nextContent);
-        alert("Réseaux sociaux enregistrés avec succès !");
+        if (contentType && contentType.includes("application/json")) {
+          try {
+            const result = JSON.parse(responseText);
+            console.log("Admin: Save successful");
+            setContent(nextContent);
+            alert("Réseaux sociaux enregistrés avec succès !");
+          } catch (jsonError) {
+            console.error("Admin: Error parsing JSON:", jsonError);
+            alert("Erreur lors de l'enregistrement: Réponse invalide");
+          }
+        } else {
+          alert("Erreur lors de l'enregistrement: Réponse non-JSON");
+        }
+      } else {
+        if (contentType && contentType.includes("application/json")) {
+          try {
+            const errorData = JSON.parse(responseText);
+            alert(`Erreur lors de l'enregistrement: ${errorData.error || errorData.details || "Erreur inconnue"}`);
+          } catch (jsonError) {
+            alert(`Erreur lors de l'enregistrement: ${response.status} ${response.statusText}`);
+          }
+        } else {
+          alert(`Erreur lors de l'enregistrement: ${response.status} ${response.statusText}`);
+        }
       }
     } catch (error) {
-      console.error("Error saving content:", error);
-      alert("Erreur lors de l'enregistrement");
+      console.error("Admin: Error saving content:", error);
+      alert(`Erreur lors de l'enregistrement: ${error instanceof Error ? error.message : "Erreur inconnue"}`);
     }
   };
 

@@ -43,21 +43,54 @@ export default function PubsAdminPage() {
 
   const handleSaveContent = async (nextContent?: any) => {
     const payload = nextContent ?? content;
-    if (!payload) return;
+    if (!payload) {
+      console.error("Admin: No payload to save");
+      return;
+    }
     try {
+      console.log("Admin: Sending PUT request to /api/content");
       const response = await fetch("/api/content", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify(payload),
       });
+      
+      console.log("Admin: Response status:", response.status);
+      const contentType = response.headers.get("content-type");
+      const responseText = await response.text();
+      
       if (response.ok) {
-        setContent(payload);
-        await fetchData();
-        setEditingPub(null);
-        setNewPub(false);
+        if (contentType && contentType.includes("application/json")) {
+          try {
+            const result = JSON.parse(responseText);
+            console.log("Admin: Save successful");
+            setContent(payload);
+            await fetchData();
+            setEditingPub(null);
+            setNewPub(false);
+          } catch (jsonError) {
+            console.error("Admin: Error parsing JSON:", jsonError);
+            alert(`Erreur lors de la sauvegarde: Réponse invalide`);
+          }
+        } else {
+          alert(`Erreur lors de la sauvegarde: Réponse non-JSON`);
+        }
+      } else {
+        if (contentType && contentType.includes("application/json")) {
+          try {
+            const errorData = JSON.parse(responseText);
+            alert(`Erreur lors de la sauvegarde: ${errorData.error || errorData.details || "Erreur inconnue"}`);
+          } catch (jsonError) {
+            alert(`Erreur lors de la sauvegarde: ${response.status} ${response.statusText}`);
+          }
+        } else {
+          alert(`Erreur lors de la sauvegarde: ${response.status} ${response.statusText}`);
+        }
       }
     } catch (error) {
-      console.error("Error saving content:", error);
+      console.error("Admin: Error saving content:", error);
+      alert(`Erreur lors de la sauvegarde: ${error instanceof Error ? error.message : "Erreur inconnue"}`);
     }
   };
 

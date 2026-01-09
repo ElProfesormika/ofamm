@@ -16,13 +16,19 @@ export default function BoutiquePage() {
 
   useEffect(() => {
     fetch("/api/content")
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        return res.json();
+      })
       .then((data) => {
+        console.log("Public: Produits fetched:", data.produits?.length || 0);
         setProduits(data.produits || []);
         setLoading(false);
       })
       .catch((error) => {
-        console.error("Error fetching products:", error);
+        console.error("Public: Error fetching products:", error);
         setLoading(false);
       });
   }, []);

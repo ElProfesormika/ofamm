@@ -26,13 +26,19 @@ export default function ImpactsPage() {
 
   useEffect(() => {
     fetch("/api/content")
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        return res.json();
+      })
       .then((data) => {
+        console.log("Public: Impacts fetched:", data.impacts?.length || 0);
         setImpacts(data.impacts || []);
         setLoading(false);
       })
       .catch((error) => {
-        console.error("Error fetching impacts:", error);
+        console.error("Public: Error fetching impacts:", error);
         setLoading(false);
       });
   }, []);

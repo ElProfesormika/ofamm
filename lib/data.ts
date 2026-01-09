@@ -260,27 +260,9 @@ export async function getContent() {
         `),
       ]);
       
-      return {
-        about: about.rows[0] || defaultContent.about,
-        legal: legal.rows[0] || defaultContent.legal,
-        services: services.rows,
-        realisations: realisations.rows,
-        evenements: evenements.rows,
-        galerie: galerie.rows,
-        partenaires: partenaires.rows,
-        impacts: impacts.rows,
-        distinctions: distinctions.rows,
-        produits: produits.rows,
-        reseauxSociaux: reseauxSociaux.rows[0] || {},
-        blog: {
-          pubs: pubs.rows,
-          articles: articles.rows,
-        },
-      };
       console.log("Content fetched from database successfully");
-      console.log("Distinctions count:", distinctions.rows.length);
-      console.log("Impacts count:", impacts.rows.length);
-      console.log("Produits count:", produits.rows.length);
+      console.log(`Fetched from DB: Slides: ${services.rows.length}, Services: ${services.rows.length}, Realisations: ${realisations.rows.length}, Evenements: ${evenements.rows.length}, Galerie: ${galerie.rows.length}, Partenaires: ${partenaires.rows.length}, Pubs: ${pubs.rows.length}, Articles: ${articles.rows.length}, Impacts: ${impacts.rows.length}, Distinctions: ${distinctions.rows.length}, Produits: ${produits.rows.length}, ReseauxSociaux: ${reseauxSociaux.rows.length > 0 ? 1 : 0}`);
+      
       return {
         about: about.rows[0] || defaultContent.about,
         legal: legal.rows[0] || defaultContent.legal,

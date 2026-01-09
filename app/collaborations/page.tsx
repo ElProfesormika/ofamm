@@ -26,13 +26,19 @@ export default function CollaborationsPage() {
 
   useEffect(() => {
     fetch("/api/content")
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        return res.json();
+      })
       .then((data) => {
+        console.log("Public: Collaborations fetched:", data.partenaires?.length || 0);
         setCollaborations(data.partenaires || []);
         setLoading(false);
       })
       .catch((error) => {
-        console.error("Error fetching collaborations:", error);
+        console.error("Public: Error fetching collaborations:", error);
         setLoading(false);
       });
   }, []);

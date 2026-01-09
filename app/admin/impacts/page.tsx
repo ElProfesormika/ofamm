@@ -43,21 +43,63 @@ export default function ImpactsAdminPage() {
 
   const handleSaveContent = async (nextContent?: any) => {
     const payload = nextContent ?? content;
-    if (!payload) return;
+    if (!payload) {
+      console.error("Admin: No payload to save");
+      return;
+    }
     try {
+      console.log("Admin: Sending PUT request to /api/content");
+      console.log("Admin: Payload impacts:", payload.impacts?.length || 0);
+      
       const response = await fetch("/api/content", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify(payload),
       });
+      
+      console.log("Admin: Response status:", response.status);
+      const contentType = response.headers.get("content-type");
+      console.log("Admin: Response Content-Type:", contentType);
+      
+      const responseText = await response.text();
+      console.log("Admin: Response text (first 500 chars):", responseText.substring(0, 500));
+      
       if (response.ok) {
-        setContent(payload);
-        await fetchData();
-        setEditingImpact(null);
-        setNewImpact(false);
+        if (contentType && contentType.includes("application/json")) {
+          try {
+            const result = JSON.parse(responseText);
+            console.log("Admin: Save successful");
+            setContent(payload);
+            await fetchData();
+            setEditingImpact(null);
+            setNewImpact(false);
+          } catch (jsonError) {
+            console.error("Admin: Error parsing JSON response:", jsonError);
+            alert(`Erreur lors de la sauvegarde: Réponse invalide du serveur`);
+          }
+        } else {
+          console.error("Admin: Response is not JSON");
+          alert(`Erreur lors de la sauvegarde: Le serveur a retourné une réponse non-JSON`);
+        }
+      } else {
+        if (contentType && contentType.includes("application/json")) {
+          try {
+            const errorData = JSON.parse(responseText);
+            console.error("Admin: Save failed:", errorData);
+            alert(`Erreur lors de la sauvegarde: ${errorData.error || errorData.details || "Erreur inconnue"}`);
+          } catch (jsonError) {
+            console.error("Admin: Error parsing error response:", jsonError);
+            alert(`Erreur lors de la sauvegarde: ${response.status} ${response.statusText}`);
+          }
+        } else {
+          console.error("Admin: Error response is not JSON");
+          alert(`Erreur lors de la sauvegarde: ${response.status} ${response.statusText} - Réponse non-JSON`);
+        }
       }
     } catch (error) {
-      console.error("Error saving content:", error);
+      console.error("Admin: Error saving content:", error);
+      alert(`Erreur lors de la sauvegarde: ${error instanceof Error ? error.message : "Erreur inconnue"}`);
     }
   };
 

@@ -80,6 +80,9 @@ export default function DistinctionsPage() {
     console.log("Public: Fetching distinctions from /api/content");
     fetch("/api/content")
       .then((res) => {
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
         console.log("Public: Response status:", res.status);
         return res.json();
       })
