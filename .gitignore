@@ -27,6 +27,7 @@ yarn-error.log*
 # local env files
 .env*.local
 .env
+.env.production
 
 # vercel
 .vercel
@@ -35,7 +36,15 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# uploaded images
-/public/uploads/*
-!/public/uploads/.gitkeep
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
 
+# OS
+Thumbs.db
+
+# Railway
+.railway/

@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Header } from "@/components/Header";
-import { LogOut, Save, ArrowLeft, Facebook, Twitter, Instagram, Linkedin, Youtube, TikTok } from "lucide-react";
+import { LogOut, Save, ArrowLeft, Facebook, Twitter, Instagram, Linkedin, Youtube, Music } from "lucide-react";
 
 interface ReseauxSociaux {
   facebook?: string;
@@ -20,7 +20,7 @@ const reseauxConfig = [
   { key: "instagram" as keyof ReseauxSociaux, label: "Instagram", icon: Instagram, color: "hover:text-pink-600 dark:hover:text-pink-400" },
   { key: "linkedin" as keyof ReseauxSociaux, label: "LinkedIn", icon: Linkedin, color: "hover:text-blue-700 dark:hover:text-blue-300" },
   { key: "youtube" as keyof ReseauxSociaux, label: "YouTube", icon: Youtube, color: "hover:text-red-600 dark:hover:text-red-400" },
-  { key: "tiktok" as keyof ReseauxSociaux, label: "TikTok", icon: TikTok, color: "hover:text-black dark:hover:text-white" },
+  { key: "tiktok" as keyof ReseauxSociaux, label: "TikTok", icon: Music, color: "hover:text-black dark:hover:text-white" },
 ];
 
 export default function ReseauxSociauxAdminPage() {

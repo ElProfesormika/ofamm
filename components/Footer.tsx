@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Facebook, Twitter, Instagram, Linkedin, Youtube, TikTok } from "lucide-react";
+import { Facebook, Twitter, Instagram, Linkedin, Youtube, Music } from "lucide-react";
 import { ScrollAnimation } from "./ScrollAnimation";
 
 interface ReseauxSociaux {
@@ -35,7 +35,7 @@ export function Footer() {
     { key: "instagram", icon: Instagram, href: reseauxSociaux.instagram, label: "Instagram", color: "hover:text-pink-600 dark:hover:text-pink-400" },
     { key: "linkedin", icon: Linkedin, href: reseauxSociaux.linkedin, label: "LinkedIn", color: "hover:text-blue-700 dark:hover:text-blue-300" },
     { key: "youtube", icon: Youtube, href: reseauxSociaux.youtube, label: "YouTube", color: "hover:text-red-600 dark:hover:text-red-400" },
-    { key: "tiktok", icon: TikTok, href: reseauxSociaux.tiktok, label: "TikTok", color: "hover:text-black dark:hover:text-white" },
+    { key: "tiktok", icon: Music, href: reseauxSociaux.tiktok, label: "TikTok", color: "hover:text-black dark:hover:text-white" },
   ].filter((link) => link.href);
   return (
     <footer className="bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-900 dark:to-gray-800 border-t border-gray-200 dark:border-gray-800 relative overflow-hidden">

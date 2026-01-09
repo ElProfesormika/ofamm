@@ -8,10 +8,18 @@ let pool: Pool | null = null;
 
 export function getPool(): Pool {
   if (!pool) {
-    pool = new Pool({
+    const connectionConfig: any = {
       connectionString: process.env.DATABASE_URL,
-      ssl: process.env.NODE_ENV === "production" ? { rejectUnauthorized: false } : false,
-    });
+    };
+    
+    // Configuration SSL pour Railway (Railway utilise SSL par défaut)
+    if (process.env.NODE_ENV === "production" || process.env.DATABASE_URL?.includes("railway")) {
+      connectionConfig.ssl = {
+        rejectUnauthorized: false,
+      };
+    }
+    
+    pool = new Pool(connectionConfig);
   }
   return pool;
 }

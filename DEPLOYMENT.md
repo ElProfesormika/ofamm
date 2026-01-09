@@ -1,72 +1,58 @@
 # Guide de déploiement avec PostgreSQL sur Railway
 
-## Préparation pour la production
+> ⚠️ **Note** : Ce fichier est conservé pour référence. Pour un guide complet et à jour, consultez **[RAILWAY_DEPLOYMENT.md](./RAILWAY_DEPLOYMENT.md)**
 
-### 1. Configuration de la base de données PostgreSQL
+## Configuration Rapide
 
-#### Sur Railway :
+### 1. Fichiers de Configuration Créés
 
-1. Créez un nouveau projet sur [Railway](https://railway.app)
-2. Ajoutez une base de données PostgreSQL
-3. Copiez l'URL de connexion (DATABASE_URL)
+Les fichiers suivants ont été créés pour Railway :
+- `railway.json` - Configuration Railway
+- `nixpacks.toml` - Configuration de build
+- `env.example` - Exemple de variables d'environnement
+- `.railwayignore` - Fichiers à ignorer lors du déploiement
+- `RAILWAY_DEPLOYMENT.md` - Guide complet de déploiement
 
-### 2. Variables d'environnement
+### 2. Variables d'Environnement Requises
 
-Créez un fichier `.env.production` avec :
+Voir `env.example` pour la liste complète. Variables essentielles :
 
 ```env
-# Database
-DATABASE_URL=postgresql://user:password@host:port/database
+DATABASE_URL=postgresql://... (fourni automatiquement par Railway)
 USE_DATABASE=true
-
-# JWT Secret (générez une clé sécurisée)
-JWT_SECRET=votre-cle-secrete-tres-longue-et-aleatoire
-
-# Admin Password (changez-le !)
-ADMIN_PASSWORD=votre-mot-de-passe-admin-securise
-
-# Node Environment
+JWT_SECRET=votre-cle-secrete
+ADMIN_PASSWORD=votre-mot-de-passe
 NODE_ENV=production
 ```
 
-### 3. Migration des données JSON vers PostgreSQL
+### 3. Déploiement
 
-Une fois la base de données configurée, vous devrez :
+1. Connectez votre repo GitHub à Railway
+2. Ajoutez un service PostgreSQL
+3. Configurez les variables d'environnement
+4. Railway déploiera automatiquement
 
-1. Activer `USE_DATABASE=true` dans les variables d'environnement
-2. Les fonctions dans `lib/data.ts` utiliseront automatiquement PostgreSQL
-3. Les données existantes dans `data/*.json` devront être migrées manuellement ou via un script de migration
-
-### 4. Script de migration (à créer)
-
-Un script de migration pourra être créé pour transférer les données JSON vers PostgreSQL :
-
-```typescript
-// scripts/migrate-to-db.ts
-// Script pour migrer les données JSON vers PostgreSQL
-```
-
-### 5. Déploiement sur Railway
-
-1. Connectez votre repository GitHub à Railway
-2. Configurez les variables d'environnement dans Railway
-3. Railway détectera automatiquement Next.js et déploiera l'application
-4. La base de données sera initialisée automatiquement au premier démarrage
-
-### 6. Structure de la base de données
+### 4. Structure de la Base de Données
 
 Les tables suivantes seront créées automatiquement :
 
 - `slides` : Slides de la page d'accueil
 - `content_about` : Contenu de la page À propos
+- `content_legal` : Contenu légal (CGU, privacy, mentions)
 - `services` : Services proposés
 - `realisations` : Réalisations
 - `evenements` : Événements
 - `galerie` : Images de la galerie
+- `partenaires` : Collaborations
+- `blog_pubs` : Publicités
+- `blog_articles` : Articles
 
-### Notes importantes
+### Notes Importantes
 
 - En développement local, les données sont stockées dans `data/*.json`
 - En production avec `USE_DATABASE=true`, les données sont dans PostgreSQL
-- Les images uploadées restent dans `public/uploads/` (considérez un service de stockage cloud pour la production)
+- Les images uploadées : utilisez Railway Volumes ou un service cloud (S3, Cloudinary)
+- La base de données est initialisée automatiquement au premier démarrage
+
+Pour plus de détails, consultez **[RAILWAY_DEPLOYMENT.md](./RAILWAY_DEPLOYMENT.md)**
 
