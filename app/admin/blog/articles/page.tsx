@@ -43,15 +43,17 @@ export default function ArticlesAdminPage() {
     }
   };
 
-  const handleSaveContent = async () => {
-    if (!content) return;
+  const handleSaveContent = async (nextContent?: any) => {
+    const payload = nextContent ?? content;
+    if (!payload) return;
     try {
       const response = await fetch("/api/content", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(content),
+        body: JSON.stringify(payload),
       });
       if (response.ok) {
+        setContent(payload);
         await fetchData();
         setEditingArticle(null);
         setNewArticle(false);
@@ -66,17 +68,19 @@ export default function ArticlesAdminPage() {
     const updatedArticles = article.id && articles.find((a) => a.id === article.id)
       ? articles.map((a) => (a.id === article.id ? article : a))
       : [...articles, { ...article, id: Date.now().toString() }];
+    const nextContent = { ...content, blog: { ...content.blog, articles: updatedArticles } };
     setArticles(updatedArticles);
-    setContent({ ...content, blog: { ...content.blog, articles: updatedArticles } });
-    await handleSaveContent();
+    setContent(nextContent);
+    await handleSaveContent(nextContent);
   };
 
   const handleDeleteArticle = async (id: string) => {
     if (!confirm("Êtes-vous sûr de vouloir supprimer cet article ?")) return;
     const updatedArticles = articles.filter((a) => a.id !== id);
+    const nextContent = { ...content, blog: { ...content.blog, articles: updatedArticles } };
     setArticles(updatedArticles);
-    setContent({ ...content, blog: { ...content.blog, articles: updatedArticles } });
-    await handleSaveContent();
+    setContent(nextContent);
+    await handleSaveContent(nextContent);
   };
 
   const handleLogout = async () => {

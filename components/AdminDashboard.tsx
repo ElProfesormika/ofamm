@@ -52,6 +52,7 @@ interface Partenaire {
   description?: string;
   logo?: string;
   website?: string;
+  type?: string;
 }
 
 interface Pub {
@@ -78,6 +79,11 @@ interface Content {
   about: {
     title: string;
     content: string;
+  };
+  legal: {
+    cgu: string;
+    privacy: string;
+    mentions?: string;
   };
   services: Service[];
   realisations: Realisation[];
@@ -129,7 +135,10 @@ export function AdminDashboard() {
       const contentData = await contentRes.json();
 
       setSlides(slidesData);
-      setContent(contentData);
+      setContent({
+        ...contentData,
+        legal: contentData.legal || { cgu: "", privacy: "", mentions: "" },
+      });
     } catch (error) {
       console.error("Error fetching data:", error);
     } finally {
@@ -178,17 +187,19 @@ export function AdminDashboard() {
     }
   };
 
-  const handleSaveContent = async () => {
-    if (!content) return;
+  const handleSaveContent = async (updatedContent?: Content) => {
+    const payload = updatedContent ?? content;
+    if (!payload) return;
 
     try {
       const response = await fetch("/api/content", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(content),
+        body: JSON.stringify(payload),
       });
 
       if (response.ok) {
+        setContent(payload);
         await fetchData();
         setEditingService(null);
         setNewService(false);
@@ -205,16 +216,18 @@ export function AdminDashboard() {
       ? content.services.map((s) => (s.id === service.id ? service : s))
       : [...content.services, { ...service, id: Date.now().toString() }];
 
-    setContent({ ...content, services: updatedServices });
-    await handleSaveContent();
+    const nextContent = { ...content, services: updatedServices };
+    setContent(nextContent);
+    await handleSaveContent(nextContent);
   };
 
   const handleDeleteService = async (id: string) => {
     if (!content || !confirm("Êtes-vous sûr de vouloir supprimer ce service ?")) return;
 
     const updatedServices = content.services.filter((s) => s.id !== id);
-    setContent({ ...content, services: updatedServices });
-    await handleSaveContent();
+    const nextContent = { ...content, services: updatedServices };
+    setContent(nextContent);
+    await handleSaveContent(nextContent);
   };
 
   // Handlers for Réalisations
@@ -223,15 +236,17 @@ export function AdminDashboard() {
     const updatedRealisations = realisation.id && content.realisations.find((r) => r.id === realisation.id)
       ? content.realisations.map((r) => (r.id === realisation.id ? realisation : r))
       : [...content.realisations, { ...realisation, id: Date.now().toString() }];
-    setContent({ ...content, realisations: updatedRealisations });
-    await handleSaveContent();
+    const nextContent = { ...content, realisations: updatedRealisations };
+    setContent(nextContent);
+    await handleSaveContent(nextContent);
   };
 
   const handleDeleteRealisation = async (id: string) => {
     if (!content || !confirm("Êtes-vous sûr de vouloir supprimer cette réalisation ?")) return;
     const updatedRealisations = content.realisations.filter((r) => r.id !== id);
-    setContent({ ...content, realisations: updatedRealisations });
-    await handleSaveContent();
+    const nextContent = { ...content, realisations: updatedRealisations };
+    setContent(nextContent);
+    await handleSaveContent(nextContent);
   };
 
   // Handlers for Événements
@@ -240,15 +255,17 @@ export function AdminDashboard() {
     const updatedEvenements = evenement.id && content.evenements.find((e) => e.id === evenement.id)
       ? content.evenements.map((e) => (e.id === evenement.id ? evenement : e))
       : [...content.evenements, { ...evenement, id: Date.now().toString() }];
-    setContent({ ...content, evenements: updatedEvenements });
-    await handleSaveContent();
+    const nextContent = { ...content, evenements: updatedEvenements };
+    setContent(nextContent);
+    await handleSaveContent(nextContent);
   };
 
   const handleDeleteEvenement = async (id: string) => {
     if (!content || !confirm("Êtes-vous sûr de vouloir supprimer cet événement ?")) return;
     const updatedEvenements = content.evenements.filter((e) => e.id !== id);
-    setContent({ ...content, evenements: updatedEvenements });
-    await handleSaveContent();
+    const nextContent = { ...content, evenements: updatedEvenements };
+    setContent(nextContent);
+    await handleSaveContent(nextContent);
   };
 
   // Handlers for Galerie
@@ -257,15 +274,17 @@ export function AdminDashboard() {
     const updatedGalerie = item.id && content.galerie.find((g) => g.id === item.id)
       ? content.galerie.map((g) => (g.id === item.id ? item : g))
       : [...content.galerie, { ...item, id: Date.now().toString() }];
-    setContent({ ...content, galerie: updatedGalerie });
-    await handleSaveContent();
+    const nextContent = { ...content, galerie: updatedGalerie };
+    setContent(nextContent);
+    await handleSaveContent(nextContent);
   };
 
   const handleDeleteGalerieItem = async (id: string) => {
     if (!content || !confirm("Êtes-vous sûr de vouloir supprimer cet élément ?")) return;
     const updatedGalerie = content.galerie.filter((g) => g.id !== id);
-    setContent({ ...content, galerie: updatedGalerie });
-    await handleSaveContent();
+    const nextContent = { ...content, galerie: updatedGalerie };
+    setContent(nextContent);
+    await handleSaveContent(nextContent);
   };
 
   if (loading) {
@@ -291,6 +310,30 @@ export function AdminDashboard() {
             >
               <LogOut className="w-4 h-4" />
               Déconnexion
+            </button>
+          </div>
+
+          {/* Tabs */}
+          <div className="mb-6 flex flex-wrap gap-3">
+            <button
+              onClick={() => setActiveTab("slides")}
+              className={`px-4 py-2 rounded-lg border transition-colors ${
+                activeTab === "slides"
+                  ? "bg-blue-600 text-white border-blue-600"
+                  : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:border-blue-500"
+              }`}
+            >
+              Slides d'accueil
+            </button>
+            <button
+              onClick={() => setActiveTab("content")}
+              className={`px-4 py-2 rounded-lg border transition-colors ${
+                activeTab === "content"
+                  ? "bg-blue-600 text-white border-blue-600"
+                  : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:border-blue-500"
+              }`}
+            >
+              Contenus & Légal
             </button>
           </div>
 
@@ -330,14 +373,25 @@ export function AdminDashboard() {
               </p>
             </Link>
             <Link
-              href="/admin/partenaires"
+              href="/admin/collaborations"
               className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow cursor-pointer"
             >
               <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">
-                Partenaires
+                Collaborations
               </h3>
               <p className="text-gray-600 dark:text-gray-400">
-                Gérez vos partenaires et leurs logos
+                Gérez vos collaborations et leurs logos
+              </p>
+            </Link>
+            <Link
+              href="/admin/timeline"
+              className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow cursor-pointer"
+            >
+              <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">
+                Timeline
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400">
+                Gérez la timeline de la page À propos
               </p>
             </Link>
             <Link
@@ -360,6 +414,50 @@ export function AdminDashboard() {
               </h3>
               <p className="text-gray-600 dark:text-gray-400">
                 Gérez vos articles de blog
+              </p>
+            </Link>
+            <Link
+              href="/admin/impacts"
+              className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow cursor-pointer"
+            >
+              <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">
+                Impacts
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400">
+                Gérez vos impacts (continents, pays, villes)
+              </p>
+            </Link>
+            <Link
+              href="/admin/distinctions"
+              className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow cursor-pointer"
+            >
+              <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">
+                Distinctions
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400">
+                Gérez vos distinctions et reconnaissances
+              </p>
+            </Link>
+            <Link
+              href="/admin/boutique"
+              className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow cursor-pointer"
+            >
+              <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">
+                Boutique
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400">
+                Gérez vos produits et services
+              </p>
+            </Link>
+            <Link
+              href="/admin/reseaux-sociaux"
+              className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow cursor-pointer"
+            >
+              <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">
+                Réseaux Sociaux
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400">
+                Gérez les liens vers vos réseaux sociaux dans le footer
               </p>
             </Link>
           </div>
@@ -554,7 +652,70 @@ export function AdminDashboard() {
                     />
                   </div>
                   <button
-                    onClick={handleSaveContent}
+                    onClick={() => content && handleSaveContent(content)}
+                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                  >
+                    Enregistrer
+                  </button>
+                </div>
+              </div>
+
+              {/* Section Légal */}
+              <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
+                <h3 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">
+                  Informations légales
+                </h3>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-2 text-gray-900 dark:text-white">
+                      Conditions Générales d&apos;Utilisation (CGU)
+                    </label>
+                    <textarea
+                      value={content.legal?.cgu || ""}
+                      onChange={(e) =>
+                        setContent({
+                          ...content,
+                          legal: { ...content.legal, cgu: e.target.value },
+                        })
+                      }
+                      rows={6}
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2 text-gray-900 dark:text-white">
+                      Politique de confidentialité
+                    </label>
+                    <textarea
+                      value={content.legal?.privacy || ""}
+                      onChange={(e) =>
+                        setContent({
+                          ...content,
+                          legal: { ...content.legal, privacy: e.target.value },
+                        })
+                      }
+                      rows={6}
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2 text-gray-900 dark:text-white">
+                      Mentions légales
+                    </label>
+                    <textarea
+                      value={content.legal?.mentions || ""}
+                      onChange={(e) =>
+                        setContent({
+                          ...content,
+                          legal: { ...content.legal, mentions: e.target.value },
+                        })
+                      }
+                      rows={4}
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    />
+                  </div>
+                  <button
+                    onClick={() => content && handleSaveContent(content)}
                     className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
                   >
                     Enregistrer

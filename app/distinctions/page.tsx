@@ -6,12 +6,12 @@ import { Footer } from "@/components/Footer";
 import { ScrollAnimation } from "@/components/ScrollAnimation";
 import { CallToActionButtons } from "@/components/CallToActionButtons";
 import Image from "next/image";
-import { Calendar, CheckCircle, Filter, X } from "lucide-react";
+import { Award, Filter, X, Calendar } from "lucide-react";
 
-interface Realisation {
+interface Distinction {
   id: string;
   title: string;
-  description: string;
+  description?: string;
   image?: string;
   date?: string;
 }
@@ -52,6 +52,7 @@ function parseDate(dateStr: string): Date | null {
           return new Date(year, month, day);
         }
       } else if (match[1] && match[1].length === 4) {
+        // Just year
         return new Date(parseInt(match[1]), 0, 1);
       }
     }
@@ -67,8 +68,8 @@ function parseDate(dateStr: string): Date | null {
 
 type DateFilter = "all" | "recent" | "old";
 
-export default function RealisationsPage() {
-  const [realisations, setRealisations] = useState<Realisation[]>([]);
+export default function DistinctionsPage() {
+  const [distinctions, setDistinctions] = useState<Distinction[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedFilter, setSelectedFilter] = useState<DateFilter>("all");
 
@@ -76,42 +77,42 @@ export default function RealisationsPage() {
     fetch("/api/content")
       .then((res) => res.json())
       .then((data) => {
-        setRealisations(data.realisations || []);
+        setDistinctions(data.distinctions || []);
         setLoading(false);
       })
       .catch((error) => {
-        console.error("Error fetching realisations:", error);
+        console.error("Error fetching distinctions:", error);
         setLoading(false);
       });
   }, []);
 
-  // Filtrer par date (récentes = dernières 3 ans, anciennes = plus de 3 ans)
-  const filteredRealisations = realisations.filter((realisation) => {
+  // Filtrer par date (récentes = dernières 5 ans, anciennes = plus de 5 ans)
+  const filteredDistinctions = distinctions.filter((distinction) => {
     if (selectedFilter === "all") return true;
     
-    const date = parseDate(realisation.date || "");
+    const date = parseDate(distinction.date || "");
     if (!date) return selectedFilter === "all";
     
     const now = new Date();
-    const threeYearsAgo = new Date(now.getFullYear() - 3, 0, 1);
+    const fiveYearsAgo = new Date(now.getFullYear() - 5, 0, 1);
     
     if (selectedFilter === "recent") {
-      return date >= threeYearsAgo;
+      return date >= fiveYearsAgo;
     } else {
-      return date < threeYearsAgo;
+      return date < fiveYearsAgo;
     }
   });
 
   const getFilterCount = (filter: DateFilter): number => {
-    if (filter === "all") return realisations.length;
+    if (filter === "all") return distinctions.length;
     
     const now = new Date();
-    const threeYearsAgo = new Date(now.getFullYear() - 3, 0, 1);
+    const fiveYearsAgo = new Date(now.getFullYear() - 5, 0, 1);
     
-    return realisations.filter((r) => {
-      const date = parseDate(r.date || "");
+    return distinctions.filter((d) => {
+      const date = parseDate(d.date || "");
       if (!date) return false;
-      return filter === "recent" ? date >= threeYearsAgo : date < threeYearsAgo;
+      return filter === "recent" ? date >= fiveYearsAgo : date < fiveYearsAgo;
     }).length;
   };
 
@@ -123,11 +124,11 @@ export default function RealisationsPage() {
           <ScrollAnimation animationType="fade" delay={100}>
             <div className="text-center mb-16">
               <h1 className="text-4xl md:text-5xl font-bold mb-4 text-gray-900 dark:text-white">
-                Nos Réalisations
+                Nos Distinctions
               </h1>
               <div className="w-24 h-1 bg-gradient-to-r from-blue-600 to-purple-600 mx-auto rounded-full mb-4"></div>
               <p className="text-center text-gray-600 dark:text-gray-400 max-w-2xl mx-auto text-lg">
-                Découvrez les projets que nous avons menés à bien et les succès de nos clients.
+                Découvrez les distinctions et reconnaissances reçues par O&apos;FAMM.
               </p>
             </div>
           </ScrollAnimation>
@@ -138,7 +139,7 @@ export default function RealisationsPage() {
               <div className="flex flex-wrap justify-center gap-3 max-w-2xl mx-auto">
                 {[
                   { value: "all" as DateFilter, label: "Toutes" },
-                  { value: "recent" as DateFilter, label: "Récentes (3 dernières années)" },
+                  { value: "recent" as DateFilter, label: "Récentes (5 dernières années)" },
                   { value: "old" as DateFilter, label: "Anciennes" },
                 ].map((filter) => {
                   const isActive = selectedFilter === filter.value;
@@ -188,61 +189,66 @@ export default function RealisationsPage() {
             <div className="text-center py-20">
               <div className="text-gray-600 dark:text-gray-400">Chargement...</div>
             </div>
-          ) : filteredRealisations.length === 0 ? (
+          ) : filteredDistinctions.length === 0 ? (
             <ScrollAnimation animationType="fade" delay={200}>
               <div className="text-center py-20">
                 <div className="w-24 h-24 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mx-auto mb-4">
-                  <CheckCircle className="w-12 h-12 text-gray-400" />
+                  <Award className="w-12 h-12 text-gray-400" />
                 </div>
                 <p className="text-gray-500 dark:text-gray-400 text-lg">
                   {selectedFilter === "all"
-                    ? "Aucune réalisation pour le moment. Revenez bientôt !"
-                    : `Aucune réalisation ${selectedFilter === "recent" ? "récente" : "ancienne"} pour le moment.`}
+                    ? "Aucune distinction pour le moment. Revenez bientôt !"
+                    : `Aucune distinction ${selectedFilter === "recent" ? "récente" : "ancienne"} pour le moment.`}
                 </p>
                 {selectedFilter !== "all" && (
                   <button
                     onClick={() => setSelectedFilter("all")}
                     className="mt-4 text-blue-600 dark:text-blue-400 hover:underline"
                   >
-                    Voir toutes les réalisations
+                    Voir toutes les distinctions
                   </button>
                 )}
               </div>
             </ScrollAnimation>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {filteredRealisations.map((realisation, index) => (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredDistinctions.map((distinction, index) => (
                 <ScrollAnimation
-                  key={realisation.id}
+                  key={distinction.id}
                   animationType="scale"
-                  delay={index * 150}
+                  delay={index * 100}
                 >
-                  <div className="group bg-white dark:bg-gray-800 rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-200 dark:border-gray-700 hover-lift">
-                    {realisation.image && (
-                      <div className="relative h-64 w-full overflow-hidden">
+                  <div className="group bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700 hover:shadow-2xl transition-all duration-300 hover-lift hover-glow relative overflow-hidden">
+                    {/* Background decoration */}
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-500/10 to-transparent rounded-bl-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    
+                    {distinction.image && (
+                      <div className="relative w-full h-56 mb-4 rounded-xl overflow-hidden group-hover:scale-[1.02] transition-transform duration-300 shadow-md group-hover:shadow-xl">
                         <Image
-                          src={realisation.image}
-                          alt={realisation.title}
+                          src={distinction.image}
+                          alt={distinction.title}
                           fill
-                          className="object-cover group-hover:scale-110 transition-transform duration-500"
+                          className="object-cover"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                       </div>
                     )}
-                    <div className="p-6">
-                      <h3 className="text-xl font-semibold mb-3 text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                        {realisation.title}
-                      </h3>
-                      <p className="text-gray-600 dark:text-gray-400 mb-4 leading-relaxed">
-                        {realisation.description}
+                    
+                    <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                      {distinction.title}
+                    </h3>
+                    
+                    {distinction.date && (
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                        <span className="font-medium">Date:</span> {distinction.date}
                       </p>
-                      {realisation.date && (
-                        <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-500">
-                          <Calendar className="w-4 h-4" />
-                          <span>{realisation.date}</span>
-                        </div>
-                      )}
-                    </div>
+                    )}
+                    
+                    {distinction.description && (
+                      <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                        {distinction.description}
+                      </p>
+                    )}
                   </div>
                 </ScrollAnimation>
               ))}

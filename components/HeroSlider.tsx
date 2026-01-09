@@ -87,7 +87,7 @@ export function HeroSlider({ slides }: HeroSliderProps) {
               {/* Contenu */}
               <div className="relative z-20 text-center text-white px-4 max-w-5xl mx-auto">
                 <div className="animate-fade-in">
-                  <h1 className="text-5xl md:text-7xl font-extrabold mb-6 leading-tight drop-shadow-2xl">
+                  <h1 className="text-5xl md:text-7xl font-extrabold mb-6 leading-tight drop-shadow-2xl text-white">
                     {slide.title}
                   </h1>
                 </div>
@@ -100,9 +100,14 @@ export function HeroSlider({ slides }: HeroSliderProps) {
                   <div className="animate-fade-in-delay-2">
                     <a
                       href={slide.ctaLink}
-                      className="inline-block px-10 py-4 bg-white text-blue-600 rounded-full font-bold text-lg hover:bg-gray-100 hover:scale-105 transition-all duration-300 shadow-2xl"
+                      className="group relative inline-block px-10 py-4 bg-white text-blue-600 rounded-full font-bold text-lg overflow-hidden transition-all duration-300 shadow-2xl hover:shadow-blue-500/50"
                     >
-                      {slide.ctaText}
+                      <span className="relative z-10">{slide.ctaText}</span>
+                      <span className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
+                      <span className="absolute inset-0 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300 relative z-10 flex items-center justify-center">
+                        {slide.ctaText}
+                      </span>
+                      <span className="absolute inset-0 shimmer opacity-0 group-hover:opacity-100"></span>
                     </a>
                   </div>
                 )}

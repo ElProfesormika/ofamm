@@ -40,15 +40,17 @@ export default function RealisationsAdminPage() {
     }
   };
 
-  const handleSaveContent = async () => {
-    if (!content) return;
+  const handleSaveContent = async (nextContent?: any) => {
+    const payload = nextContent ?? content;
+    if (!payload) return;
     try {
       const response = await fetch("/api/content", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(content),
+        body: JSON.stringify(payload),
       });
       if (response.ok) {
+        setContent(payload);
         await fetchData();
         setEditingRealisation(null);
         setNewRealisation(false);
@@ -63,17 +65,19 @@ export default function RealisationsAdminPage() {
     const updatedRealisations = realisation.id && realisations.find((r) => r.id === realisation.id)
       ? realisations.map((r) => (r.id === realisation.id ? realisation : r))
       : [...realisations, { ...realisation, id: Date.now().toString() }];
+    const nextContent = { ...content, realisations: updatedRealisations };
     setRealisations(updatedRealisations);
-    setContent({ ...content, realisations: updatedRealisations });
-    await handleSaveContent();
+    setContent(nextContent);
+    await handleSaveContent(nextContent);
   };
 
   const handleDeleteRealisation = async (id: string) => {
     if (!confirm("Êtes-vous sûr de vouloir supprimer cette réalisation ?")) return;
     const updatedRealisations = realisations.filter((r) => r.id !== id);
+    const nextContent = { ...content, realisations: updatedRealisations };
     setRealisations(updatedRealisations);
-    setContent({ ...content, realisations: updatedRealisations });
-    await handleSaveContent();
+    setContent(nextContent);
+    await handleSaveContent(nextContent);
   };
 
   const handleLogout = async () => {

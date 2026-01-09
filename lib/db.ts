@@ -45,6 +45,17 @@ export async function initDatabase() {
       )
     `);
 
+    // Create legal content table
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS content_legal (
+        id SERIAL PRIMARY KEY,
+        cgu TEXT,
+        privacy TEXT,
+        mentions TEXT,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
     // Create services table
     await db.query(`
       CREATE TABLE IF NOT EXISTS services (
@@ -89,6 +100,56 @@ export async function initDatabase() {
         id SERIAL PRIMARY KEY,
         title VARCHAR(255),
         image VARCHAR(500) NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // Create partenaires table
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS partenaires (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        description TEXT,
+        logo VARCHAR(500),
+        website VARCHAR(500),
+        type VARCHAR(100),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    
+    // Add type column if it doesn't exist (for existing databases)
+    await db.query(`
+      ALTER TABLE partenaires 
+      ADD COLUMN IF NOT EXISTS type VARCHAR(100)
+    `);
+
+    // Create blog_pubs table
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS blog_pubs (
+        id SERIAL PRIMARY KEY,
+        title VARCHAR(255) NOT NULL,
+        description TEXT NOT NULL,
+        image VARCHAR(500),
+        date VARCHAR(100),
+        link VARCHAR(500),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // Create blog_articles table
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS blog_articles (
+        id SERIAL PRIMARY KEY,
+        title VARCHAR(255) NOT NULL,
+        description TEXT NOT NULL,
+        excerpt TEXT,
+        content TEXT,
+        image VARCHAR(500),
+        date VARCHAR(100),
+        author VARCHAR(255),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )

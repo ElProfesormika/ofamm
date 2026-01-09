@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-// import { shouldUseDatabase, getPool, initDatabase } from "./db";
+import { shouldUseDatabase, getPool, initDatabase } from "./db";
 
 const dataDir = path.join(process.cwd(), "data");
 
@@ -45,6 +45,11 @@ const defaultContent = {
     title: "À propos d'O'FAMM",
     content: "O'FAMM, ou Obé Mawussé Fantodji, est une femme data commerciale et médiastratégiste au Togo, reconnue pour son expertise en stratégie digitale et en prospection. Elle est la fondatrice de O'FAMM, une organisation qui accompagne des jeunes et des femmes dans leur développement professionnel et leur autonomie grâce à des programmes de formation et de marketing digital. O'FAMM a également été lauréate de Women in Tech 2024 et a lancé plusieurs initiatives pour soutenir la jeune génération en Afrique.",
   },
+  legal: {
+    cgu: "Conditions Générales d'Utilisation à personnaliser.",
+    privacy: "Politique de confidentialité à personnaliser.",
+    mentions: "Mentions légales à personnaliser.",
+  },
   services: [
     {
       id: "1",
@@ -66,6 +71,10 @@ const defaultContent = {
   evenements: [],
   galerie: [],
   partenaires: [],
+  impacts: [],
+  distinctions: [],
+  produits: [],
+  reseauxSociaux: {},
   blog: {
     pubs: [],
     articles: [],
@@ -98,64 +107,378 @@ function writeJsonFile(filePath: string, data: any) {
 }
 
 export async function getSlides() {
-  // TODO: Switch to database when USE_DATABASE=true
-  // Uncomment when ready to use PostgreSQL:
-  // if (shouldUseDatabase()) {
-  //   const db = getPool();
-  //   const result = await db.query("SELECT * FROM slides ORDER BY created_at DESC");
-  //   return result.rows;
-  // }
+  if (shouldUseDatabase()) {
+    try {
+      const db = getPool();
+      const result = await db.query(`
+        SELECT 
+          id::text as id,
+          title,
+          description,
+          image,
+          cta_text as "ctaText",
+          cta_link as "ctaLink"
+        FROM slides 
+        ORDER BY created_at DESC
+      `);
+      return result.rows;
+    } catch (error) {
+      console.error("Error fetching slides from database:", error);
+      // Fallback to JSON if database fails
+      return readJsonFile(slidesFile, defaultSlides);
+    }
+  }
   return readJsonFile(slidesFile, defaultSlides);
 }
 
 export async function getContent() {
-  // TODO: Switch to database when USE_DATABASE=true
-  // Uncomment when ready to use PostgreSQL:
-  // if (shouldUseDatabase()) {
-  //   const db = getPool();
-  //   const [about, services, realisations, evenements, galerie] = await Promise.all([
-  //     db.query("SELECT * FROM content_about ORDER BY id DESC LIMIT 1"),
-  //     db.query("SELECT * FROM services ORDER BY created_at DESC"),
-  //     db.query("SELECT * FROM realisations ORDER BY created_at DESC"),
-  //     db.query("SELECT * FROM evenements ORDER BY created_at DESC"),
-  //     db.query("SELECT * FROM galerie ORDER BY created_at DESC"),
-  //   ]);
-  //   return {
-  //     about: about.rows[0] || defaultContent.about,
-  //     services: services.rows,
-  //     realisations: realisations.rows,
-  //     evenements: evenements.rows,
-  //     galerie: galerie.rows,
-  //   };
-  // }
-  return readJsonFile(contentFile, defaultContent);
+  if (shouldUseDatabase()) {
+    try {
+      const db = getPool();
+      const [about, legal, services, realisations, evenements, galerie, partenaires, pubs, articles] = await Promise.all([
+        db.query("SELECT title, content FROM content_about ORDER BY id DESC LIMIT 1"),
+        db.query("SELECT cgu, privacy, mentions FROM content_legal ORDER BY id DESC LIMIT 1"),
+        db.query(`
+          SELECT 
+            id::text as id,
+            title,
+            description
+          FROM services 
+          ORDER BY created_at DESC
+        `),
+        db.query(`
+          SELECT 
+            id::text as id,
+            title,
+            description,
+            image,
+            date
+          FROM realisations 
+          ORDER BY created_at DESC
+        `),
+        db.query(`
+          SELECT 
+            id::text as id,
+            title,
+            description,
+            image,
+            date,
+            location
+          FROM evenements 
+          ORDER BY created_at DESC
+        `),
+        db.query(`
+          SELECT 
+            id::text as id,
+            title,
+            image
+          FROM galerie 
+          ORDER BY created_at DESC
+        `),
+        db.query(`
+          SELECT 
+            id::text as id,
+            name,
+            description,
+            logo,
+            website,
+            type
+          FROM partenaires 
+          ORDER BY created_at DESC
+        `),
+        db.query(`
+          SELECT 
+            id::text as id,
+            title,
+            description,
+            image,
+            date,
+            link
+          FROM blog_pubs 
+          ORDER BY created_at DESC
+        `),
+        db.query(`
+          SELECT 
+            id::text as id,
+            title,
+            description,
+            excerpt,
+            content,
+            image,
+            date,
+            author
+          FROM blog_articles 
+          ORDER BY created_at DESC
+        `),
+      ]);
+      
+      return {
+        about: about.rows[0] || defaultContent.about,
+        legal: legal.rows[0] || defaultContent.legal,
+        services: services.rows,
+        realisations: realisations.rows,
+        evenements: evenements.rows,
+        galerie: galerie.rows,
+        partenaires: partenaires.rows,
+        blog: {
+          pubs: pubs.rows,
+          articles: articles.rows,
+        },
+      };
+    } catch (error) {
+      console.error("Error fetching content from database:", error);
+      // Fallback to JSON if database fails
+      return readJsonFile(contentFile, defaultContent);
+    }
+  }
+  const data = readJsonFile(contentFile, defaultContent);
+  return {
+    ...defaultContent,
+    ...data,
+    legal: data.legal || defaultContent.legal,
+    impacts: data.impacts || [],
+    distinctions: data.distinctions || [],
+    produits: data.produits || [],
+    reseauxSociaux: data.reseauxSociaux || {},
+  };
 }
 
 export async function saveSlides(slides: any[]) {
-  // TODO: Switch to database when USE_DATABASE=true
-  // Uncomment when ready to use PostgreSQL:
-  // if (shouldUseDatabase()) {
-  //   const db = getPool();
-  //   // Implementation for database save
-  //   return true;
-  // }
+  if (shouldUseDatabase()) {
+    try {
+      const db = getPool();
+      const client = await db.connect();
+      
+      try {
+        await client.query("BEGIN");
+        
+        // Delete all existing slides
+        await client.query("DELETE FROM slides");
+        
+        // Insert all slides
+        for (const slide of slides) {
+          const slideId = slide.id ? parseInt(slide.id) : null;
+          await client.query(
+            `INSERT INTO slides (id, title, description, image, cta_text, cta_link, updated_at)
+             VALUES ($1, $2, $3, $4, $5, $6, CURRENT_TIMESTAMP)`,
+            [
+              slideId,
+              slide.title || "",
+              slide.description || "",
+              slide.image || null,
+              slide.ctaText || null,
+              slide.ctaLink || null,
+            ]
+          );
+        }
+        
+        await client.query("COMMIT");
+        return true;
+      } catch (error) {
+        await client.query("ROLLBACK");
+        throw error;
+      } finally {
+        client.release();
+      }
+    } catch (error) {
+      console.error("Error saving slides to database:", error);
+      // Fallback to JSON if database fails
+      return writeJsonFile(slidesFile, slides);
+    }
+  }
   return writeJsonFile(slidesFile, slides);
 }
 
 export async function saveContent(content: any) {
-  // TODO: Switch to database when USE_DATABASE=true
-  // Uncomment when ready to use PostgreSQL:
-  // if (shouldUseDatabase()) {
-  //   const db = getPool();
-  //   // Implementation for database save
-  //   return true;
-  // }
+  if (shouldUseDatabase()) {
+    try {
+      const db = getPool();
+      const client = await db.connect();
+      
+      try {
+        await client.query("BEGIN");
+        
+        // Save about section
+        if (content.about) {
+          await client.query("DELETE FROM content_about");
+          await client.query(
+            `INSERT INTO content_about (title, content, updated_at)
+             VALUES ($1, $2, CURRENT_TIMESTAMP)`,
+            [content.about.title, content.about.content]
+          );
+        }
+
+        // Save legal section
+        if (content.legal) {
+          await client.query("DELETE FROM content_legal");
+          await client.query(
+            `INSERT INTO content_legal (cgu, privacy, mentions, updated_at)
+             VALUES ($1, $2, $3, CURRENT_TIMESTAMP)`,
+            [
+              content.legal.cgu || "",
+              content.legal.privacy || "",
+              content.legal.mentions || "",
+            ]
+          );
+        }
+        
+        // Save services
+        if (content.services) {
+          await client.query("DELETE FROM services");
+          for (const service of content.services) {
+            const serviceId = service.id ? parseInt(service.id) : null;
+            await client.query(
+              `INSERT INTO services (id, title, description, updated_at)
+               VALUES ($1, $2, $3, CURRENT_TIMESTAMP)`,
+              [
+                serviceId,
+                service.title || "",
+                service.description || "",
+              ]
+            );
+          }
+        }
+        
+        // Save realisations
+        if (content.realisations) {
+          await client.query("DELETE FROM realisations");
+          for (const realisation of content.realisations) {
+            const realisationId = realisation.id ? parseInt(realisation.id) : null;
+            await client.query(
+              `INSERT INTO realisations (id, title, description, image, date, updated_at)
+               VALUES ($1, $2, $3, $4, $5, CURRENT_TIMESTAMP)`,
+              [
+                realisationId,
+                realisation.title || "",
+                realisation.description || "",
+                realisation.image || null,
+                realisation.date || null,
+              ]
+            );
+          }
+        }
+        
+        // Save evenements
+        if (content.evenements) {
+          await client.query("DELETE FROM evenements");
+          for (const evenement of content.evenements) {
+            const evenementId = evenement.id ? parseInt(evenement.id) : null;
+            await client.query(
+              `INSERT INTO evenements (id, title, description, image, date, location, updated_at)
+               VALUES ($1, $2, $3, $4, $5, $6, CURRENT_TIMESTAMP)`,
+              [
+                evenementId,
+                evenement.title || "",
+                evenement.description || "",
+                evenement.image || null,
+                evenement.date || null,
+                evenement.location || null,
+              ]
+            );
+          }
+        }
+        
+        // Save galerie
+        if (content.galerie) {
+          await client.query("DELETE FROM galerie");
+          for (const item of content.galerie) {
+            const itemId = item.id ? parseInt(item.id) : null;
+            await client.query(
+              `INSERT INTO galerie (id, title, image, updated_at)
+               VALUES ($1, $2, $3, CURRENT_TIMESTAMP)`,
+              [
+                itemId,
+                item.title || null,
+                item.image || "",
+              ]
+            );
+          }
+        }
+        
+        // Save partenaires
+        if (content.partenaires) {
+          await client.query("DELETE FROM partenaires");
+          for (const partenaire of content.partenaires) {
+            const partenaireId = partenaire.id ? parseInt(partenaire.id) : null;
+            await client.query(
+              `INSERT INTO partenaires (id, name, description, logo, website, type, updated_at)
+               VALUES ($1, $2, $3, $4, $5, $6, CURRENT_TIMESTAMP)`,
+              [
+                partenaireId,
+                partenaire.name || "",
+                partenaire.description || null,
+                partenaire.logo || null,
+                partenaire.website || null,
+                partenaire.type || null,
+              ]
+            );
+          }
+        }
+        
+        // Save blog pubs
+        if (content.blog?.pubs) {
+          await client.query("DELETE FROM blog_pubs");
+          for (const pub of content.blog.pubs) {
+            const pubId = pub.id ? parseInt(pub.id) : null;
+            await client.query(
+              `INSERT INTO blog_pubs (id, title, description, image, date, link, updated_at)
+               VALUES ($1, $2, $3, $4, $5, $6, CURRENT_TIMESTAMP)`,
+              [
+                pubId,
+                pub.title || "",
+                pub.description || "",
+                pub.image || null,
+                pub.date || null,
+                pub.link || null,
+              ]
+            );
+          }
+        }
+        
+        // Save blog articles
+        if (content.blog?.articles) {
+          await client.query("DELETE FROM blog_articles");
+          for (const article of content.blog.articles) {
+            const articleId = article.id ? parseInt(article.id) : null;
+            await client.query(
+              `INSERT INTO blog_articles (id, title, description, excerpt, content, image, date, author, updated_at)
+               VALUES ($1, $2, $3, $4, $5, $6, $7, $8, CURRENT_TIMESTAMP)`,
+              [
+                articleId,
+                article.title || "",
+                article.description || "",
+                article.excerpt || null,
+                article.content || null,
+                article.image || null,
+                article.date || null,
+                article.author || null,
+              ]
+            );
+          }
+        }
+        
+        // Note: impacts, distinctions, and produits are saved to JSON only for now
+        // Database tables can be added later if needed
+        
+        await client.query("COMMIT");
+        return true;
+      } catch (error) {
+        await client.query("ROLLBACK");
+        throw error;
+      } finally {
+        client.release();
+      }
+    } catch (error) {
+      console.error("Error saving content to database:", error);
+      // Fallback to JSON if database fails
+      return writeJsonFile(contentFile, content);
+    }
+  }
   return writeJsonFile(contentFile, content);
 }
 
 // Initialize database on first import (only if DATABASE_URL is set)
-// Uncomment when ready to use PostgreSQL:
-// if (shouldUseDatabase()) {
-//   initDatabase().catch(console.error);
-// }
+if (shouldUseDatabase()) {
+  initDatabase().catch(console.error);
+}
 

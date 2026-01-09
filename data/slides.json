@@ -1,24 +1,24 @@
 [
   {
     "id": "1",
-    "title": "Bienvenue chez O'FAMM",
-    "description": "Stratégie digitale et médiastratégie au Togo - Accompagnement dans votre transformation digitale",
-    "image": "https://picsum.photos/1920/1080?random=1",
+    "title": "O'FAMM - Freelance en Communication & Stratégie Marketing",
+    "description": "Première Femme Data Commerciale du Togo. Disponible immédiatement en contrat Freelance 3 ou 6 mois",
+    "image": "/uploads/1767802093672_logo_ofamm.jpg",
     "ctaText": "Découvrir nos services",
     "ctaLink": "/services"
   },
   {
     "id": "2",
-    "title": "Accompagnement Professionnel",
-    "description": "Formation et développement pour jeunes et femmes en marketing digital et stratégie digitale",
-    "image": "https://picsum.photos/1920/1080?random=2",
+    "title": "Transformation Digitale & Accompagnement",
+    "description": "Audit digital, création de contenus, lancement de produits et gestion de projets. Impact international depuis 2020",
+    "image": "/uploads/1767802209350_city-7510927_640.jpg",
     "ctaText": "En savoir plus",
     "ctaLink": "/about"
   },
   {
     "id": "3",
-    "title": "Women in Tech 2024",
-    "description": "Lauréate de Women in Tech 2024 - Excellence reconnue dans le domaine de la technologie et du digital",
+    "title": "Women in Tech 2024 - Prix Togo Digital Awards",
+    "description": "Reconnaissance de l'excellence dans le domaine du digital. Plus de 75 jeunes et femmes formés, +100 entreprises accompagnées",
     "image": "https://picsum.photos/1920/1080?random=3",
     "ctaText": "Voir nos réalisations",
     "ctaLink": "/realisations"

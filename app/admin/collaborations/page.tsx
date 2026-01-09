@@ -13,6 +13,7 @@ interface Partenaire {
   description?: string;
   logo?: string;
   website?: string;
+  type?: string;
 }
 
 export default function PartenairesAdminPage() {
@@ -40,15 +41,17 @@ export default function PartenairesAdminPage() {
     }
   };
 
-  const handleSaveContent = async () => {
-    if (!content) return;
+  const handleSaveContent = async (nextContent?: any) => {
+    const payload = nextContent ?? content;
+    if (!payload) return;
     try {
       const response = await fetch("/api/content", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(content),
+        body: JSON.stringify(payload),
       });
       if (response.ok) {
+        setContent(payload);
         await fetchData();
         setEditingPartenaire(null);
         setNewPartenaire(false);
@@ -63,17 +66,19 @@ export default function PartenairesAdminPage() {
     const updatedPartenaires = partenaire.id && partenaires.find((p) => p.id === partenaire.id)
       ? partenaires.map((p) => (p.id === partenaire.id ? partenaire : p))
       : [...partenaires, { ...partenaire, id: Date.now().toString() }];
+    const nextContent = { ...content, partenaires: updatedPartenaires };
     setPartenaires(updatedPartenaires);
-    setContent({ ...content, partenaires: updatedPartenaires });
-    await handleSaveContent();
+    setContent(nextContent);
+    await handleSaveContent(nextContent);
   };
 
   const handleDeletePartenaire = async (id: string) => {
-    if (!confirm("Êtes-vous sûr de vouloir supprimer ce partenaire ?")) return;
+    if (!confirm("Êtes-vous sûr de vouloir supprimer cette collaboration ?")) return;
     const updatedPartenaires = partenaires.filter((p) => p.id !== id);
+    const nextContent = { ...content, partenaires: updatedPartenaires };
     setPartenaires(updatedPartenaires);
-    setContent({ ...content, partenaires: updatedPartenaires });
-    await handleSaveContent();
+    setContent(nextContent);
+    await handleSaveContent(nextContent);
   };
 
   const handleLogout = async () => {
@@ -104,7 +109,7 @@ export default function PartenairesAdminPage() {
                 <ArrowLeft className="w-5 h-5" />
               </button>
               <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-                Gestion des Partenaires
+                Gestion des Collaborations
               </h1>
             </div>
             <button
@@ -126,19 +131,20 @@ export default function PartenairesAdminPage() {
                     name: "",
                     description: "",
                     website: "",
+                    type: "",
                   });
                 }}
                 className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
               >
                 <Plus className="w-4 h-4" />
-                Ajouter un partenaire
+                Ajouter une collaboration
               </button>
             </div>
 
             {(newPartenaire || editingPartenaire) && (
               <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
                 <h3 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">
-                  {newPartenaire ? "Nouveau partenaire" : "Modifier le partenaire"}
+                  {newPartenaire ? "Nouvelle collaboration" : "Modifier la collaboration"}
                 </h3>
                 <div className="space-y-4">
                   <div>
@@ -190,6 +196,30 @@ export default function PartenairesAdminPage() {
                       className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                     />
                   </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2 text-gray-900 dark:text-white">
+                      Type de collaboration
+                    </label>
+                    <select
+                      value={editingPartenaire?.type || ""}
+                      onChange={(e) =>
+                        setEditingPartenaire({ ...editingPartenaire!, type: e.target.value })
+                      }
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    >
+                      <option value="">Sélectionner un type</option>
+                      <option value="diplomatique">Diplomatique</option>
+                      <option value="ambassades">Ambassades</option>
+                      <option value="institutions">Institutions</option>
+                      <option value="organismes">Organismes</option>
+                      <option value="universites">Universités</option>
+                      <option value="entreprises">Entreprises</option>
+                      <option value="autres">Autres</option>
+                    </select>
+                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                      Catégorisez la collaboration pour faciliter le filtrage sur le site
+                    </p>
+                  </div>
                   <div className="flex gap-4">
                     <button
                       onClick={() => editingPartenaire && handleSavePartenaire(editingPartenaire)}
@@ -232,6 +262,11 @@ export default function PartenairesAdminPage() {
                   <h3 className="text-xl font-semibold mb-2 text-center text-gray-900 dark:text-white">
                     {partenaire.name}
                   </h3>
+                  {partenaire.type && (
+                    <span className="inline-block px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 mb-2">
+                      {partenaire.type}
+                    </span>
+                  )}
                   {partenaire.description && (
                     <p className="text-sm text-gray-600 dark:text-gray-400 text-center mb-4">
                       {partenaire.description}

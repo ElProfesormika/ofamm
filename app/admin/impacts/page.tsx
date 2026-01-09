@@ -7,22 +7,22 @@ import { Header } from "@/components/Header";
 import { ImageUpload } from "@/components/ImageUpload";
 import { LogOut, Plus, Edit, Trash2, Save, X, ArrowLeft } from "lucide-react";
 
-interface Pub {
+interface Impact {
   id: string;
-  title: string;
-  description: string;
+  continent?: string;
+  pays?: string;
+  ville?: string;
+  description?: string;
   image?: string;
-  date?: string;
-  link?: string;
 }
 
-export default function PubsAdminPage() {
+export default function ImpactsAdminPage() {
   const router = useRouter();
   const [content, setContent] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [pubs, setPubs] = useState<Pub[]>([]);
-  const [editingPub, setEditingPub] = useState<Pub | null>(null);
-  const [newPub, setNewPub] = useState(false);
+  const [impacts, setImpacts] = useState<Impact[]>([]);
+  const [editingImpact, setEditingImpact] = useState<Impact | null>(null);
+  const [newImpact, setNewImpact] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -33,7 +33,7 @@ export default function PubsAdminPage() {
       const response = await fetch("/api/content");
       const data = await response.json();
       setContent(data);
-      setPubs(data.blog?.pubs || []);
+      setImpacts(data.impacts || []);
     } catch (error) {
       console.error("Error fetching data:", error);
     } finally {
@@ -53,30 +53,30 @@ export default function PubsAdminPage() {
       if (response.ok) {
         setContent(payload);
         await fetchData();
-        setEditingPub(null);
-        setNewPub(false);
+        setEditingImpact(null);
+        setNewImpact(false);
       }
     } catch (error) {
       console.error("Error saving content:", error);
     }
   };
 
-  const handleSavePub = async (pub: Pub) => {
+  const handleSaveImpact = async (impact: Impact) => {
     if (!content) return;
-    const updatedPubs = pub.id && pubs.find((p) => p.id === pub.id)
-      ? pubs.map((p) => (p.id === pub.id ? pub : p))
-      : [...pubs, { ...pub, id: Date.now().toString() }];
-    const nextContent = { ...content, blog: { ...content.blog, pubs: updatedPubs } };
-    setPubs(updatedPubs);
+    const updatedImpacts = impact.id && impacts.find((i) => i.id === impact.id)
+      ? impacts.map((i) => (i.id === impact.id ? impact : i))
+      : [...impacts, { ...impact, id: Date.now().toString() }];
+    const nextContent = { ...content, impacts: updatedImpacts };
+    setImpacts(updatedImpacts);
     setContent(nextContent);
     await handleSaveContent(nextContent);
   };
 
-  const handleDeletePub = async (id: string) => {
-    if (!confirm("Êtes-vous sûr de vouloir supprimer cette publicité ?")) return;
-    const updatedPubs = pubs.filter((p) => p.id !== id);
-    const nextContent = { ...content, blog: { ...content.blog, pubs: updatedPubs } };
-    setPubs(updatedPubs);
+  const handleDeleteImpact = async (id: string) => {
+    if (!confirm("Êtes-vous sûr de vouloir supprimer cet impact ?")) return;
+    const updatedImpacts = impacts.filter((i) => i.id !== id);
+    const nextContent = { ...content, impacts: updatedImpacts };
+    setImpacts(updatedImpacts);
     setContent(nextContent);
     await handleSaveContent(nextContent);
   };
@@ -109,7 +109,7 @@ export default function PubsAdminPage() {
                 <ArrowLeft className="w-5 h-5" />
               </button>
               <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-                Gestion des Publicités
+                Gestion des Impacts
               </h1>
             </div>
             <button
@@ -125,96 +125,92 @@ export default function PubsAdminPage() {
             <div className="flex justify-end">
               <button
                 onClick={() => {
-                  setNewPub(true);
-                  setEditingPub({
+                  setNewImpact(true);
+                  setEditingImpact({
                     id: "",
-                    title: "",
+                    continent: "",
+                    pays: "",
+                    ville: "",
                     description: "",
-                    date: "",
-                    link: "",
                   });
                 }}
                 className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
               >
                 <Plus className="w-4 h-4" />
-                Ajouter une publicité
+                Ajouter un impact
               </button>
             </div>
 
-            {(newPub || editingPub) && (
+            {(newImpact || editingImpact) && (
               <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
                 <h3 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">
-                  {newPub ? "Nouvelle publicité" : "Modifier la publicité"}
+                  {newImpact ? "Nouvel impact" : "Modifier l'impact"}
                 </h3>
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium mb-2 text-gray-900 dark:text-white">
-                      Titre
+                      Continent
                     </label>
                     <input
                       type="text"
-                      value={editingPub?.title || ""}
+                      value={editingImpact?.continent || ""}
                       onChange={(e) =>
-                        setEditingPub({ ...editingPub!, title: e.target.value })
+                        setEditingImpact({ ...editingImpact!, continent: e.target.value })
                       }
                       className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-2 text-gray-900 dark:text-white">
-                      Description
+                      Pays
+                    </label>
+                    <input
+                      type="text"
+                      value={editingImpact?.pays || ""}
+                      onChange={(e) =>
+                        setEditingImpact({ ...editingImpact!, pays: e.target.value })
+                      }
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2 text-gray-900 dark:text-white">
+                      Ville
+                    </label>
+                    <input
+                      type="text"
+                      value={editingImpact?.ville || ""}
+                      onChange={(e) =>
+                        setEditingImpact({ ...editingImpact!, ville: e.target.value })
+                      }
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2 text-gray-900 dark:text-white">
+                      Description (optionnel)
                     </label>
                     <textarea
-                      value={editingPub?.description || ""}
+                      value={editingImpact?.description || ""}
                       onChange={(e) =>
-                        setEditingPub({ ...editingPub!, description: e.target.value })
+                        setEditingImpact({ ...editingImpact!, description: e.target.value })
                       }
-                      rows={4}
+                      rows={3}
                       className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                     />
                   </div>
                   <div>
                     <ImageUpload
-                      value={editingPub?.image}
+                      value={editingImpact?.image}
                       onChange={(url) =>
-                        setEditingPub({ ...editingPub!, image: url })
+                        setEditingImpact({ ...editingImpact!, image: url })
                       }
-                      label="Image"
+                      label="Image (optionnel)"
                     />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium mb-2 text-gray-900 dark:text-white">
-                        Date
-                      </label>
-                      <input
-                        type="text"
-                        value={editingPub?.date || ""}
-                        onChange={(e) =>
-                          setEditingPub({ ...editingPub!, date: e.target.value })
-                        }
-                        placeholder="Ex: 15 Mars 2024"
-                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-2 text-gray-900 dark:text-white">
-                        Lien (URL optionnel)
-                      </label>
-                      <input
-                        type="url"
-                        value={editingPub?.link || ""}
-                        onChange={(e) =>
-                          setEditingPub({ ...editingPub!, link: e.target.value })
-                        }
-                        placeholder="https://..."
-                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                      />
-                    </div>
                   </div>
                   <div className="flex gap-4">
                     <button
-                      onClick={() => editingPub && handleSavePub(editingPub)}
+                      onClick={() => editingImpact && handleSaveImpact(editingImpact)}
                       className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
                     >
                       <Save className="w-4 h-4" />
@@ -222,8 +218,8 @@ export default function PubsAdminPage() {
                     </button>
                     <button
                       onClick={() => {
-                        setEditingPub(null);
-                        setNewPub(false);
+                        setEditingImpact(null);
+                        setNewImpact(false);
                       }}
                       className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
                     >
@@ -236,42 +232,54 @@ export default function PubsAdminPage() {
             )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {pubs.map((pub) => (
+              {impacts.map((impact) => (
                 <div
-                  key={pub.id}
+                  key={impact.id}
                   className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700"
                 >
-                  {pub.image && (
+                  {impact.image && (
                     <div className="relative w-full h-48 mb-4 rounded-lg overflow-hidden">
                       <Image
-                        src={pub.image}
-                        alt={pub.title}
+                        src={impact.image}
+                        alt={impact.continent || impact.pays || "Impact"}
                         fill
                         className="object-cover"
                       />
                     </div>
                   )}
                   <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">
-                    {pub.title}
+                    {impact.continent || impact.pays || impact.ville || "Impact"}
                   </h3>
-                  <p className="text-gray-600 dark:text-gray-400 mb-2 line-clamp-3">
-                    {pub.description}
-                  </p>
-                  {pub.date && (
-                    <p className="text-sm text-gray-500 dark:text-gray-500 mb-4">
-                      📅 {pub.date}
+                  {impact.continent && (
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                      <span className="font-medium">Continent:</span> {impact.continent}
+                    </p>
+                  )}
+                  {impact.pays && (
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                      <span className="font-medium">Pays:</span> {impact.pays}
+                    </p>
+                  )}
+                  {impact.ville && (
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                      <span className="font-medium">Ville:</span> {impact.ville}
+                    </p>
+                  )}
+                  {impact.description && (
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                      {impact.description}
                     </p>
                   )}
                   <div className="flex gap-2">
                     <button
-                      onClick={() => setEditingPub(pub)}
+                      onClick={() => setEditingImpact(impact)}
                       className="flex items-center gap-2 px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors text-sm"
                     >
                       <Edit className="w-4 h-4" />
                       Modifier
                     </button>
                     <button
-                      onClick={() => handleDeletePub(pub.id)}
+                      onClick={() => handleDeleteImpact(impact.id)}
                       className="flex items-center gap-2 px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition-colors text-sm"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -287,4 +295,9 @@ export default function PubsAdminPage() {
     </div>
   );
 }
+
+
+
+
+
 

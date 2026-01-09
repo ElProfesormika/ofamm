@@ -7,19 +7,21 @@ import { Header } from "@/components/Header";
 import { ImageUpload } from "@/components/ImageUpload";
 import { LogOut, Plus, Edit, Trash2, Save, X, ArrowLeft } from "lucide-react";
 
-interface GalerieItem {
+interface Distinction {
   id: string;
-  title?: string;
-  image: string;
+  title: string;
+  description?: string;
+  date?: string;
+  image?: string;
 }
 
-export default function GalerieAdminPage() {
+export default function DistinctionsAdminPage() {
   const router = useRouter();
   const [content, setContent] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [galerie, setGalerie] = useState<GalerieItem[]>([]);
-  const [editingGalerieItem, setEditingGalerieItem] = useState<GalerieItem | null>(null);
-  const [newGalerieItem, setNewGalerieItem] = useState(false);
+  const [distinctions, setDistinctions] = useState<Distinction[]>([]);
+  const [editingDistinction, setEditingDistinction] = useState<Distinction | null>(null);
+  const [newDistinction, setNewDistinction] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -30,7 +32,7 @@ export default function GalerieAdminPage() {
       const response = await fetch("/api/content");
       const data = await response.json();
       setContent(data);
-      setGalerie(data.galerie || []);
+      setDistinctions(data.distinctions || []);
     } catch (error) {
       console.error("Error fetching data:", error);
     } finally {
@@ -50,30 +52,30 @@ export default function GalerieAdminPage() {
       if (response.ok) {
         setContent(payload);
         await fetchData();
-        setEditingGalerieItem(null);
-        setNewGalerieItem(false);
+        setEditingDistinction(null);
+        setNewDistinction(false);
       }
     } catch (error) {
       console.error("Error saving content:", error);
     }
   };
 
-  const handleSaveGalerieItem = async (item: GalerieItem) => {
+  const handleSaveDistinction = async (distinction: Distinction) => {
     if (!content) return;
-    const updatedGalerie = item.id && galerie.find((g) => g.id === item.id)
-      ? galerie.map((g) => (g.id === item.id ? item : g))
-      : [...galerie, { ...item, id: Date.now().toString() }];
-    const nextContent = { ...content, galerie: updatedGalerie };
-    setGalerie(updatedGalerie);
+    const updatedDistinctions = distinction.id && distinctions.find((d) => d.id === distinction.id)
+      ? distinctions.map((d) => (d.id === distinction.id ? distinction : d))
+      : [...distinctions, { ...distinction, id: Date.now().toString() }];
+    const nextContent = { ...content, distinctions: updatedDistinctions };
+    setDistinctions(updatedDistinctions);
     setContent(nextContent);
     await handleSaveContent(nextContent);
   };
 
-  const handleDeleteGalerieItem = async (id: string) => {
-    if (!confirm("Êtes-vous sûr de vouloir supprimer cette image ?")) return;
-    const updatedGalerie = galerie.filter((g) => g.id !== id);
-    const nextContent = { ...content, galerie: updatedGalerie };
-    setGalerie(updatedGalerie);
+  const handleDeleteDistinction = async (id: string) => {
+    if (!confirm("Êtes-vous sûr de vouloir supprimer cette distinction ?")) return;
+    const updatedDistinctions = distinctions.filter((d) => d.id !== id);
+    const nextContent = { ...content, distinctions: updatedDistinctions };
+    setDistinctions(updatedDistinctions);
     setContent(nextContent);
     await handleSaveContent(nextContent);
   };
@@ -106,7 +108,7 @@ export default function GalerieAdminPage() {
                 <ArrowLeft className="w-5 h-5" />
               </button>
               <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-                Gestion de la Galerie
+                Gestion des Distinctions
               </h1>
             </div>
             <button
@@ -122,51 +124,79 @@ export default function GalerieAdminPage() {
             <div className="flex justify-end">
               <button
                 onClick={() => {
-                  setNewGalerieItem(true);
-                  setEditingGalerieItem({
+                  setNewDistinction(true);
+                  setEditingDistinction({
                     id: "",
-                    image: "",
                     title: "",
+                    description: "",
+                    date: "",
                   });
                 }}
                 className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
               >
                 <Plus className="w-4 h-4" />
-                Ajouter une image
+                Ajouter une distinction
               </button>
             </div>
 
-            {(newGalerieItem || editingGalerieItem) && (
+            {(newDistinction || editingDistinction) && (
               <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
                 <h3 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">
-                  {newGalerieItem ? "Nouvelle image" : "Modifier l'image"}
+                  {newDistinction ? "Nouvelle distinction" : "Modifier la distinction"}
                 </h3>
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium mb-2 text-gray-900 dark:text-white">
-                      Titre (optionnel)
+                      Titre (ex: Miss Bibliothèque)
                     </label>
                     <input
                       type="text"
-                      value={editingGalerieItem?.title || ""}
+                      value={editingDistinction?.title || ""}
                       onChange={(e) =>
-                        setEditingGalerieItem({ ...editingGalerieItem!, title: e.target.value })
+                        setEditingDistinction({ ...editingDistinction!, title: e.target.value })
                       }
                       className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                     />
                   </div>
                   <div>
-                    <ImageUpload
-                      value={editingGalerieItem?.image}
-                      onChange={(url) =>
-                        setEditingGalerieItem({ ...editingGalerieItem!, image: url })
+                    <label className="block text-sm font-medium mb-2 text-gray-900 dark:text-white">
+                      Description (optionnel)
+                    </label>
+                    <textarea
+                      value={editingDistinction?.description || ""}
+                      onChange={(e) =>
+                        setEditingDistinction({ ...editingDistinction!, description: e.target.value })
                       }
-                      label="Image"
+                      rows={3}
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2 text-gray-900 dark:text-white">
+                      Date (optionnel)
+                    </label>
+                    <input
+                      type="text"
+                      value={editingDistinction?.date || ""}
+                      onChange={(e) =>
+                        setEditingDistinction({ ...editingDistinction!, date: e.target.value })
+                      }
+                      placeholder="Ex: 2024"
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    />
+                  </div>
+                  <div>
+                    <ImageUpload
+                      value={editingDistinction?.image}
+                      onChange={(url) =>
+                        setEditingDistinction({ ...editingDistinction!, image: url })
+                      }
+                      label="Image (optionnel)"
                     />
                   </div>
                   <div className="flex gap-4">
                     <button
-                      onClick={() => editingGalerieItem && handleSaveGalerieItem(editingGalerieItem)}
+                      onClick={() => editingDistinction && handleSaveDistinction(editingDistinction)}
                       className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
                     >
                       <Save className="w-4 h-4" />
@@ -174,8 +204,8 @@ export default function GalerieAdminPage() {
                     </button>
                     <button
                       onClick={() => {
-                        setEditingGalerieItem(null);
-                        setNewGalerieItem(false);
+                        setEditingDistinction(null);
+                        setNewDistinction(false);
                       }}
                       className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
                     >
@@ -187,40 +217,48 @@ export default function GalerieAdminPage() {
               </div>
             )}
 
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {galerie.map((item) => (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {distinctions.map((distinction) => (
                 <div
-                  key={item.id}
-                  className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700"
+                  key={distinction.id}
+                  className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700"
                 >
-                  {item.image && (
-                    <div className="relative aspect-square mb-3 rounded-lg overflow-hidden">
+                  {distinction.image && (
+                    <div className="relative w-full h-48 mb-4 rounded-lg overflow-hidden">
                       <Image
-                        src={item.image}
-                        alt={item.title || "Image"}
+                        src={distinction.image}
+                        alt={distinction.title}
                         fill
                         className="object-cover"
                       />
                     </div>
                   )}
-                  {item.title && (
-                    <p className="text-sm font-semibold mb-3 text-gray-900 dark:text-white">
-                      {item.title}
+                  <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">
+                    {distinction.title}
+                  </h3>
+                  {distinction.date && (
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                      <span className="font-medium">Date:</span> {distinction.date}
+                    </p>
+                  )}
+                  {distinction.description && (
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                      {distinction.description}
                     </p>
                   )}
                   <div className="flex gap-2">
                     <button
-                      onClick={() => setEditingGalerieItem(item)}
-                      className="flex items-center gap-1 px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors text-xs"
+                      onClick={() => setEditingDistinction(distinction)}
+                      className="flex items-center gap-2 px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors text-sm"
                     >
-                      <Edit className="w-3 h-3" />
+                      <Edit className="w-4 h-4" />
                       Modifier
                     </button>
                     <button
-                      onClick={() => handleDeleteGalerieItem(item.id)}
-                      className="flex items-center gap-1 px-2 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition-colors text-xs"
+                      onClick={() => handleDeleteDistinction(distinction.id)}
+                      className="flex items-center gap-2 px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition-colors text-sm"
                     >
-                      <Trash2 className="w-3 h-3" />
+                      <Trash2 className="w-4 h-4" />
                       Supprimer
                     </button>
                   </div>
@@ -233,4 +271,9 @@ export default function GalerieAdminPage() {
     </div>
   );
 }
+
+
+
+
+
 

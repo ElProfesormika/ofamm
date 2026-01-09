@@ -8,6 +8,7 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "O'FAMM - Obé Mawussé Fantodji",
   description: "Cabinet de stratégie digitale et médiastratégie au Togo",
+  viewport: "width=device-width, initial-scale=1, maximum-scale=5",
 };
 
 export default function RootLayout({
