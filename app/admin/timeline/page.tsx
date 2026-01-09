@@ -44,7 +44,7 @@ export default function TimelineAdminPage() {
     if (!payload) return;
     try {
       const response = await fetch("/api/content", {
-        method: "PUT",
+        method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });

@@ -5,9 +5,11 @@ import { verifyToken } from "@/lib/auth";
 export async function middleware(request: NextRequest) {
   const token = request.cookies.get("admin_token")?.value;
   const { pathname } = request.nextUrl;
+  const method = request.method;
 
-  // Ne pas interférer avec les routes API
+  // Ne pas interférer avec les routes API - laisser passer toutes les méthodes
   if (pathname.startsWith("/api/")) {
+    console.log(`Middleware: Allowing ${method} request to ${pathname}`);
     return NextResponse.next();
   }
 

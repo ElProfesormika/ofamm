@@ -114,7 +114,7 @@ export default function EvenementsAdminPage() {
     try {
       console.log("Admin: Sending PUT request to /api/content");
       const response = await fetch("/api/content", {
-        method: "PUT",
+        method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify(payload),

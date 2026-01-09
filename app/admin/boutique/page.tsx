@@ -51,7 +51,7 @@ export default function BoutiqueAdminPage() {
       console.log("Admin: Payload produits:", payload.produits?.length || 0);
       
       const response = await fetch("/api/content", {
-        method: "PUT",
+        method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify(payload),

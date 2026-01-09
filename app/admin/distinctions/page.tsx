@@ -52,7 +52,7 @@ export default function DistinctionsAdminPage() {
       console.log("Payload distinctions data:", JSON.stringify(payload.distinctions, null, 2));
       
       const response = await fetch("/api/content", {
-        method: "PUT",
+        method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
