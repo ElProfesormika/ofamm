@@ -77,14 +77,19 @@ export default function DistinctionsPage() {
   const [selectedFilter, setSelectedFilter] = useState<DateFilter>("all");
 
   useEffect(() => {
+    console.log("Public: Fetching distinctions from /api/content");
     fetch("/api/content")
-      .then((res) => res.json())
+      .then((res) => {
+        console.log("Public: Response status:", res.status);
+        return res.json();
+      })
       .then((data) => {
+        console.log("Public: Data received, distinctions count:", data.distinctions?.length || 0);
         setDistinctions(data.distinctions || []);
         setLoading(false);
       })
       .catch((error) => {
-        console.error("Error fetching distinctions:", error);
+        console.error("Public: Error fetching distinctions:", error);
         setLoading(false);
       });
   }, []);

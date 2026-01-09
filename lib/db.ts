@@ -32,7 +32,7 @@ export async function initDatabase() {
     // Create slides table
     await db.query(`
       CREATE TABLE IF NOT EXISTS slides (
-        id SERIAL PRIMARY KEY,
+        id BIGSERIAL PRIMARY KEY,
         title VARCHAR(255) NOT NULL,
         description TEXT,
         image VARCHAR(500),
@@ -67,7 +67,7 @@ export async function initDatabase() {
     // Create services table
     await db.query(`
       CREATE TABLE IF NOT EXISTS services (
-        id SERIAL PRIMARY KEY,
+        id BIGSERIAL PRIMARY KEY,
         title VARCHAR(255) NOT NULL,
         description TEXT NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -78,7 +78,7 @@ export async function initDatabase() {
     // Create realisations table
     await db.query(`
       CREATE TABLE IF NOT EXISTS realisations (
-        id SERIAL PRIMARY KEY,
+        id BIGSERIAL PRIMARY KEY,
         title VARCHAR(255) NOT NULL,
         description TEXT,
         image VARCHAR(500),
@@ -91,7 +91,7 @@ export async function initDatabase() {
     // Create evenements table
     await db.query(`
       CREATE TABLE IF NOT EXISTS evenements (
-        id SERIAL PRIMARY KEY,
+        id BIGSERIAL PRIMARY KEY,
         title VARCHAR(255) NOT NULL,
         description TEXT,
         image VARCHAR(500),
@@ -105,7 +105,7 @@ export async function initDatabase() {
     // Create galerie table
     await db.query(`
       CREATE TABLE IF NOT EXISTS galerie (
-        id SERIAL PRIMARY KEY,
+        id BIGSERIAL PRIMARY KEY,
         title VARCHAR(255),
         image VARCHAR(500) NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -116,7 +116,7 @@ export async function initDatabase() {
     // Create partenaires table
     await db.query(`
       CREATE TABLE IF NOT EXISTS partenaires (
-        id SERIAL PRIMARY KEY,
+        id BIGSERIAL PRIMARY KEY,
         name VARCHAR(255) NOT NULL,
         description TEXT,
         logo VARCHAR(500),
@@ -136,7 +136,7 @@ export async function initDatabase() {
     // Create blog_pubs table
     await db.query(`
       CREATE TABLE IF NOT EXISTS blog_pubs (
-        id SERIAL PRIMARY KEY,
+        id BIGSERIAL PRIMARY KEY,
         title VARCHAR(255) NOT NULL,
         description TEXT NOT NULL,
         image VARCHAR(500),
@@ -150,7 +150,7 @@ export async function initDatabase() {
     // Create blog_articles table
     await db.query(`
       CREATE TABLE IF NOT EXISTS blog_articles (
-        id SERIAL PRIMARY KEY,
+        id BIGSERIAL PRIMARY KEY,
         title VARCHAR(255) NOT NULL,
         description TEXT NOT NULL,
         excerpt TEXT,
@@ -166,7 +166,7 @@ export async function initDatabase() {
     // Create impacts table
     await db.query(`
       CREATE TABLE IF NOT EXISTS impacts (
-        id SERIAL PRIMARY KEY,
+        id BIGSERIAL PRIMARY KEY,
         continent VARCHAR(255),
         pays VARCHAR(255),
         ville VARCHAR(255),
@@ -180,7 +180,7 @@ export async function initDatabase() {
     // Create distinctions table
     await db.query(`
       CREATE TABLE IF NOT EXISTS distinctions (
-        id SERIAL PRIMARY KEY,
+        id BIGSERIAL PRIMARY KEY,
         title VARCHAR(255) NOT NULL,
         description TEXT,
         image VARCHAR(500),
@@ -193,7 +193,7 @@ export async function initDatabase() {
     // Create produits table
     await db.query(`
       CREATE TABLE IF NOT EXISTS produits (
-        id SERIAL PRIMARY KEY,
+        id BIGSERIAL PRIMARY KEY,
         title VARCHAR(255) NOT NULL,
         description TEXT,
         image VARCHAR(500),

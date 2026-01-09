@@ -135,7 +135,7 @@ export async function getContent() {
   if (shouldUseDatabase()) {
     try {
       const db = getPool();
-      const [about, legal, services, realisations, evenements, galerie, partenaires, pubs, articles] = await Promise.all([
+      const [about, legal, services, realisations, evenements, galerie, partenaires, pubs, articles, impacts, distinctions, produits, reseauxSociaux] = await Promise.all([
         db.query("SELECT title, content FROM content_about ORDER BY id DESC LIMIT 1"),
         db.query("SELECT cgu, privacy, mentions FROM content_legal ORDER BY id DESC LIMIT 1"),
         db.query(`
@@ -210,6 +210,48 @@ export async function getContent() {
           FROM blog_articles 
           ORDER BY created_at DESC
         `),
+        db.query(`
+          SELECT 
+            id::text as id,
+            continent,
+            pays,
+            ville,
+            description,
+            image
+          FROM impacts 
+          ORDER BY created_at DESC
+        `),
+        db.query(`
+          SELECT 
+            id::text as id,
+            title,
+            description,
+            image,
+            date
+          FROM distinctions 
+          ORDER BY created_at DESC
+        `),
+        db.query(`
+          SELECT 
+            id::text as id,
+            title,
+            description,
+            image,
+            prix
+          FROM produits 
+          ORDER BY created_at DESC
+        `),
+        db.query(`
+          SELECT 
+            facebook,
+            twitter,
+            instagram,
+            linkedin,
+            youtube,
+            tiktok
+          FROM reseaux_sociaux 
+          ORDER BY id DESC LIMIT 1
+        `),
       ]);
       
       return {
@@ -220,6 +262,10 @@ export async function getContent() {
         evenements: evenements.rows,
         galerie: galerie.rows,
         partenaires: partenaires.rows,
+        impacts: impacts.rows,
+        distinctions: distinctions.rows,
+        produits: produits.rows,
+        reseauxSociaux: reseauxSociaux.rows[0] || {},
         blog: {
           pubs: pubs.rows,
           articles: articles.rows,
@@ -290,13 +336,20 @@ export async function saveSlides(slides: any[]) {
 }
 
 export async function saveContent(content: any) {
+  console.log("saveContent called - shouldUseDatabase():", shouldUseDatabase());
+  console.log("USE_DATABASE:", process.env.USE_DATABASE);
+  console.log("DATABASE_URL:", process.env.DATABASE_URL ? "Configurée" : "Non configurée");
+  
   if (shouldUseDatabase()) {
     try {
       const db = getPool();
+      console.log("Connecting to database...");
       const client = await db.connect();
+      console.log("Database connected, starting transaction...");
       
       try {
         await client.query("BEGIN");
+        console.log("Transaction BEGIN");
         
         // Save about section
         if (content.about) {
@@ -457,8 +510,80 @@ export async function saveContent(content: any) {
           }
         }
         
-        // Note: impacts, distinctions, and produits are saved to JSON only for now
-        // Database tables can be added later if needed
+        // Save impacts
+        if (content.impacts) {
+          await client.query("DELETE FROM impacts");
+          for (const impact of content.impacts) {
+            const impactId = impact.id ? parseInt(impact.id) : null;
+            await client.query(
+              `INSERT INTO impacts (id, continent, pays, ville, description, image, updated_at)
+               VALUES ($1, $2, $3, $4, $5, $6, CURRENT_TIMESTAMP)`,
+              [
+                impactId,
+                impact.continent || null,
+                impact.pays || null,
+                impact.ville || null,
+                impact.description || null,
+                impact.image || null,
+              ]
+            );
+          }
+        }
+
+        // Save distinctions
+        if (content.distinctions) {
+          await client.query("DELETE FROM distinctions");
+          for (const distinction of content.distinctions) {
+            const distinctionId = distinction.id ? parseInt(distinction.id) : null;
+            await client.query(
+              `INSERT INTO distinctions (id, title, description, image, date, updated_at)
+               VALUES ($1, $2, $3, $4, $5, CURRENT_TIMESTAMP)`,
+              [
+                distinctionId,
+                distinction.title || "",
+                distinction.description || null,
+                distinction.image || null,
+                distinction.date || null,
+              ]
+            );
+          }
+        }
+
+        // Save produits
+        if (content.produits) {
+          await client.query("DELETE FROM produits");
+          for (const produit of content.produits) {
+            const produitId = produit.id ? parseInt(produit.id) : null;
+            await client.query(
+              `INSERT INTO produits (id, title, description, image, prix, updated_at)
+               VALUES ($1, $2, $3, $4, $5, CURRENT_TIMESTAMP)`,
+              [
+                produitId,
+                produit.title || "",
+                produit.description || null,
+                produit.image || null,
+                produit.prix || null,
+              ]
+            );
+          }
+        }
+
+        // Save reseaux sociaux
+        if (content.reseauxSociaux) {
+          await client.query("DELETE FROM reseaux_sociaux");
+          await client.query(
+            `INSERT INTO reseaux_sociaux (facebook, twitter, instagram, linkedin, youtube, tiktok, updated_at)
+             VALUES ($1, $2, $3, $4, $5, $6, CURRENT_TIMESTAMP)`,
+            [
+              content.reseauxSociaux.facebook || null,
+              content.reseauxSociaux.twitter || null,
+              content.reseauxSociaux.instagram || null,
+              content.reseauxSociaux.linkedin || null,
+              content.reseauxSociaux.youtube || null,
+              content.reseauxSociaux.tiktok || null,
+            ]
+          );
+        }
         
         await client.query("COMMIT");
         return true;
@@ -470,8 +595,12 @@ export async function saveContent(content: any) {
       }
     } catch (error) {
       console.error("Error saving content to database:", error);
-      // Fallback to JSON if database fails
-      return writeJsonFile(contentFile, content);
+      console.error("Error details:", {
+        message: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+      });
+      // Ne pas faire de fallback silencieux en production - remonter l'erreur
+      throw error;
     }
   }
   return writeJsonFile(contentFile, content);

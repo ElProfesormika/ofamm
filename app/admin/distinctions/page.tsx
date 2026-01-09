@@ -44,19 +44,32 @@ export default function DistinctionsAdminPage() {
     const payload = nextContent ?? content;
     if (!payload) return;
     try {
+      console.log("Admin: Sending PUT request to /api/content");
+      console.log("Payload distinctions:", payload.distinctions?.length || 0);
+      
       const response = await fetch("/api/content", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
+      
+      console.log("Admin: Response status:", response.status);
+      
       if (response.ok) {
+        const result = await response.json();
+        console.log("Admin: Save successful");
         setContent(payload);
         await fetchData();
         setEditingDistinction(null);
         setNewDistinction(false);
+      } else {
+        const errorData = await response.json();
+        console.error("Admin: Save failed:", errorData);
+        alert(`Erreur lors de la sauvegarde: ${errorData.error || errorData.details || "Erreur inconnue"}`);
       }
     } catch (error) {
-      console.error("Error saving content:", error);
+      console.error("Admin: Error saving content:", error);
+      alert(`Erreur lors de la sauvegarde: ${error instanceof Error ? error.message : "Erreur inconnue"}`);
     }
   };
 
