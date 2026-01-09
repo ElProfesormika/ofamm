@@ -85,6 +85,7 @@ export function ImageUpload({ value, onChange, label = "Image" }: ImageUploadPro
               alt="Preview"
               fill
               className="object-cover"
+              unoptimized={preview?.startsWith("data:image/") || preview?.startsWith("/uploads/")}
             />
             <button
               onClick={handleRemove}

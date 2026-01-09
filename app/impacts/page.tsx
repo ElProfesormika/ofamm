@@ -213,6 +213,7 @@ export default function ImpactsPage() {
                           alt={impact.continent || impact.pays || impact.ville || "Impact"}
                           fill
                           className="object-cover"
+                          unoptimized={impact.image?.startsWith("/uploads/") || impact.image?.startsWith("data:image/")}
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                       </div>

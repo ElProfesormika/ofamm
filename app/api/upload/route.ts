@@ -42,25 +42,52 @@ export async function POST(request: NextRequest) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    // Create uploads directory if it doesn't exist
+    // Option 1: Stocker en base64 dans la DB (recommandé pour Railway)
+    // Convertir l'image en base64
+    const base64Image = buffer.toString("base64");
+    const mimeType = file.type || "image/jpeg";
+    const dataUrl = `data:${mimeType};base64,${base64Image}`;
+
+    // Option 2: Stocker dans le système de fichiers (pour développement local)
+    // Créer le dossier uploads si nécessaire
     const uploadsDir = path.join(process.cwd(), "public", "uploads");
     if (!existsSync(uploadsDir)) {
       await mkdir(uploadsDir, { recursive: true });
     }
 
-    // Generate unique filename
+    // Générer un nom de fichier unique
     const timestamp = Date.now();
     const originalName = file.name.replace(/[^a-zA-Z0-9.-]/g, "_");
     const filename = `${timestamp}_${originalName}`;
     const filepath = path.join(uploadsDir, filename);
 
-    // Write file
-    await writeFile(filepath, buffer);
+    // Écrire le fichier (pour développement local)
+    try {
+      await writeFile(filepath, buffer);
+    } catch (error) {
+      console.warn("Could not write file to filesystem (this is OK on Railway):", error);
+    }
 
-    // Return the public URL
-    const publicUrl = `/uploads/${filename}`;
-
-    return NextResponse.json({ url: publicUrl, filename });
+    // En production (Railway), utiliser base64 stocké en DB
+    // En développement, on peut utiliser le chemin local
+    const useBase64 = process.env.NODE_ENV === "production" || process.env.USE_BASE64_IMAGES === "true";
+    
+    if (useBase64) {
+      // Retourner l'URL base64 pour stockage en DB
+      return NextResponse.json({ 
+        url: dataUrl, 
+        filename: filename,
+        storage: "base64"
+      });
+    } else {
+      // Retourner le chemin local pour développement
+      const publicUrl = `/uploads/${filename}`;
+      return NextResponse.json({ 
+        url: publicUrl, 
+        filename: filename,
+        storage: "filesystem"
+      });
+    }
   } catch (error) {
     console.error("Upload error:", error);
     return NextResponse.json(

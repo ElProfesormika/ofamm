@@ -54,6 +54,7 @@ export default async function PubsPage() {
                           alt={pub.title}
                           fill
                           className="object-cover group-hover:scale-110 transition-transform duration-500"
+                          unoptimized={pub.image?.startsWith("data:image/") || pub.image?.startsWith("/uploads/")}
                         />
                         <div className="absolute top-4 right-4 px-3 py-1 bg-white/90 dark:bg-gray-900/90 rounded-full backdrop-blur-sm">
                           <span className="text-xs font-semibold text-blue-600 dark:text-blue-400">PUB</span>

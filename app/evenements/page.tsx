@@ -244,6 +244,7 @@ export default function EvenementsPage() {
                             alt={evenement.title}
                             fill
                             className="object-cover group-hover:scale-110 transition-transform duration-500"
+                            unoptimized={evenement.image?.startsWith("data:image/") || evenement.image?.startsWith("/uploads/")}
                           />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
                           <div className="absolute top-4 right-4 px-3 py-1 bg-white/90 dark:bg-gray-900/90 rounded-full backdrop-blur-sm">

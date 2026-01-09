@@ -207,6 +207,7 @@ export default function CollaborationsPage() {
                               alt={partenaire.name}
                               fill
                               className="object-contain filter group-hover:drop-shadow-md transition-all duration-300"
+                              unoptimized={partenaire.logo?.startsWith("data:image/") || partenaire.logo?.startsWith("/uploads/")}
                             />
                           </div>
                         </div>
