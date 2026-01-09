@@ -42,10 +42,14 @@ export default function DistinctionsAdminPage() {
 
   const handleSaveContent = async (nextContent?: any) => {
     const payload = nextContent ?? content;
-    if (!payload) return;
+    if (!payload) {
+      console.error("Admin: No payload to save");
+      return;
+    }
     try {
       console.log("Admin: Sending PUT request to /api/content");
       console.log("Payload distinctions:", payload.distinctions?.length || 0);
+      console.log("Payload distinctions data:", JSON.stringify(payload.distinctions, null, 2));
       
       const response = await fetch("/api/content", {
         method: "PUT",
@@ -55,17 +59,50 @@ export default function DistinctionsAdminPage() {
       
       console.log("Admin: Response status:", response.status);
       
+      // Vérifier le Content-Type de la réponse
+      const contentType = response.headers.get("content-type");
+      console.log("Admin: Response Content-Type:", contentType);
+      
+      // Lire le texte de la réponse d'abord pour pouvoir le logger
+      const responseText = await response.text();
+      console.log("Admin: Response text (first 500 chars):", responseText.substring(0, 500));
+      
       if (response.ok) {
-        const result = await response.json();
-        console.log("Admin: Save successful");
-        setContent(payload);
-        await fetchData();
-        setEditingDistinction(null);
-        setNewDistinction(false);
+        if (contentType && contentType.includes("application/json")) {
+          try {
+            const result = JSON.parse(responseText);
+            console.log("Admin: Save successful");
+            console.log("Admin: Result distinctions:", result.distinctions?.length || 0);
+            setContent(payload);
+            await fetchData();
+            setEditingDistinction(null);
+            setNewDistinction(false);
+          } catch (jsonError) {
+            console.error("Admin: Error parsing JSON response:", jsonError);
+            console.error("Admin: Full response text:", responseText);
+            alert(`Erreur lors de la sauvegarde: Réponse invalide du serveur (JSON parse error)`);
+          }
+        } else {
+          console.error("Admin: Response is not JSON, Content-Type:", contentType);
+          console.error("Admin: Full response text:", responseText);
+          alert(`Erreur lors de la sauvegarde: Le serveur a retourné une réponse non-JSON (${contentType || 'unknown'})`);
+        }
       } else {
-        const errorData = await response.json();
-        console.error("Admin: Save failed:", errorData);
-        alert(`Erreur lors de la sauvegarde: ${errorData.error || errorData.details || "Erreur inconnue"}`);
+        if (contentType && contentType.includes("application/json")) {
+          try {
+            const errorData = JSON.parse(responseText);
+            console.error("Admin: Save failed:", errorData);
+            alert(`Erreur lors de la sauvegarde: ${errorData.error || errorData.details || "Erreur inconnue"}`);
+          } catch (jsonError) {
+            console.error("Admin: Error parsing error response:", jsonError);
+            console.error("Admin: Full error response text:", responseText);
+            alert(`Erreur lors de la sauvegarde: ${response.status} ${response.statusText} (JSON parse error)`);
+          }
+        } else {
+          console.error("Admin: Error response is not JSON, Content-Type:", contentType);
+          console.error("Admin: Full error response text:", responseText);
+          alert(`Erreur lors de la sauvegarde: ${response.status} ${response.statusText} - Réponse non-JSON`);
+        }
       }
     } catch (error) {
       console.error("Admin: Error saving content:", error);

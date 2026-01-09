@@ -132,9 +132,15 @@ export async function getSlides() {
 }
 
 export async function getContent() {
-  if (shouldUseDatabase()) {
+  const useDb = shouldUseDatabase();
+  console.log("getContent called - shouldUseDatabase():", useDb);
+  console.log("USE_DATABASE:", process.env.USE_DATABASE);
+  console.log("DATABASE_URL:", process.env.DATABASE_URL ? "Configurée" : "Non configurée");
+  
+  if (useDb) {
     try {
       const db = getPool();
+      console.log("Fetching content from database...");
       const [about, legal, services, realisations, evenements, galerie, partenaires, pubs, articles, impacts, distinctions, produits, reseauxSociaux] = await Promise.all([
         db.query("SELECT title, content FROM content_about ORDER BY id DESC LIMIT 1"),
         db.query("SELECT cgu, privacy, mentions FROM content_legal ORDER BY id DESC LIMIT 1"),
@@ -271,9 +277,35 @@ export async function getContent() {
           articles: articles.rows,
         },
       };
+      console.log("Content fetched from database successfully");
+      console.log("Distinctions count:", distinctions.rows.length);
+      console.log("Impacts count:", impacts.rows.length);
+      console.log("Produits count:", produits.rows.length);
+      return {
+        about: about.rows[0] || defaultContent.about,
+        legal: legal.rows[0] || defaultContent.legal,
+        services: services.rows,
+        realisations: realisations.rows,
+        evenements: evenements.rows,
+        galerie: galerie.rows,
+        partenaires: partenaires.rows,
+        impacts: impacts.rows,
+        distinctions: distinctions.rows,
+        produits: produits.rows,
+        reseauxSociaux: reseauxSociaux.rows[0] || {},
+        blog: {
+          pubs: pubs.rows,
+          articles: articles.rows,
+        },
+      };
     } catch (error) {
       console.error("Error fetching content from database:", error);
+      console.error("Error details:", {
+        message: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+      });
       // Fallback to JSON if database fails
+      console.log("Falling back to JSON file");
       return readJsonFile(contentFile, defaultContent);
     }
   }
@@ -532,9 +564,12 @@ export async function saveContent(content: any) {
 
         // Save distinctions
         if (content.distinctions) {
+          console.log(`Saving ${content.distinctions.length} distinction(s)`);
           await client.query("DELETE FROM distinctions");
+          console.log("DELETE FROM distinctions: OK");
           for (const distinction of content.distinctions) {
             const distinctionId = distinction.id ? parseInt(distinction.id) : null;
+            console.log(`Inserting distinction: ${distinction.title} (ID: ${distinctionId}, Image: ${distinction.image || 'none'})`);
             await client.query(
               `INSERT INTO distinctions (id, title, description, image, date, updated_at)
                VALUES ($1, $2, $3, $4, $5, CURRENT_TIMESTAMP)`,
@@ -546,7 +581,11 @@ export async function saveContent(content: any) {
                 distinction.date || null,
               ]
             );
+            console.log(`Distinction inserted successfully: ${distinction.title}`);
           }
+          console.log(`All ${content.distinctions.length} distinction(s) saved successfully`);
+        } else {
+          console.log("WARNING: content.distinctions is missing or empty - no distinctions will be saved");
         }
 
         // Save produits
@@ -586,9 +625,17 @@ export async function saveContent(content: any) {
         }
         
         await client.query("COMMIT");
+        console.log("Transaction COMMIT successful");
+        console.log("saveContent: All data saved to database successfully");
         return true;
       } catch (error) {
         await client.query("ROLLBACK");
+        console.error("Transaction error in saveContent:", error);
+        console.error("Error details:", {
+          message: error instanceof Error ? error.message : String(error),
+          code: (error as any)?.code,
+          stack: error instanceof Error ? error.stack : undefined,
+        });
         throw error;
       } finally {
         client.release();
@@ -599,10 +646,16 @@ export async function saveContent(content: any) {
         message: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
       });
-      // Ne pas faire de fallback silencieux en production - remonter l'erreur
-      throw error;
+      // En production, ne pas faire de fallback silencieux - remonter l'erreur
+      if (process.env.NODE_ENV === "production") {
+        throw error;
+      }
+      // En développement, fallback vers JSON
+      console.warn("Falling back to JSON file (development mode)");
+      return writeJsonFile(contentFile, content);
     }
   }
+  console.log("saveContent: Using JSON file (shouldUseDatabase() returned false)");
   return writeJsonFile(contentFile, content);
 }
 
