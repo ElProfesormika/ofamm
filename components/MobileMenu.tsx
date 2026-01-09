@@ -34,7 +34,7 @@ export function MobileMenu({ navItems, pathname, onClose }: MobileMenuProps) {
                   <span>{item.label}</span>
                   <ChevronDown className={`w-5 h-5 transition-transform duration-200 flex-shrink-0 ${isOpen ? "rotate-180" : ""}`} />
                 </button>
-                {isOpen && (
+                {isOpen && item.submenu && (
                   <div className="ml-3 sm:ml-4 mt-2 mb-2 flex flex-col gap-2 border-l-2 border-blue-200 dark:border-blue-800 pl-3 sm:pl-4">
                     {item.submenu.map((subItem) => (
                       <Link

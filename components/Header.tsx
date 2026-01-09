@@ -56,8 +56,9 @@ export function Header() {
   };
 
   useEffect(() => {
+    const timeouts = submenuTimeoutRef.current;
     return () => {
-      Object.values(submenuTimeoutRef.current).forEach((timeout) => {
+      Object.values(timeouts).forEach((timeout) => {
         if (timeout) clearTimeout(timeout);
       });
     };

@@ -23,9 +23,12 @@ function parseDate(dateStr: string): Date | null {
   const months: { [key: string]: number } = {
     janvier: 0, février: 1, mars: 2, avril: 3, mai: 4, juin: 5,
     juillet: 6, août: 7, septembre: 8, octobre: 9, novembre: 10, décembre: 11,
-    jan: 0, fév: 1, mar: 2, avr: 3, mai: 4, jun: 5,
+    jan: 0, fév: 1, mar: 2, avr: 3, jun: 5,
     jul: 6, aoû: 7, sep: 8, oct: 9, nov: 10, déc: 11,
   };
+  
+  // Gérer le cas spécial de "mai" qui est à la fois complet et abrégé
+  months["mai"] = 4;
   
   for (const format of formats) {
     const match = dateStr.match(format);

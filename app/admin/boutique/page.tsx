@@ -123,7 +123,7 @@ export default function BoutiqueAdminPage() {
           <div className="space-y-4">
             <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4">
               <p className="text-sm text-blue-800 dark:text-blue-200">
-                <strong>Note:</strong> Les visiteurs pourront commander vos produits en cliquant sur le bouton "Commander via WhatsApp" qui les redirigera vers le numéro <strong>+228 93 10 14 30</strong>.
+                <strong>Note:</strong> Les visiteurs pourront commander vos produits en cliquant sur le bouton &quot;Commander via WhatsApp&quot; qui les redirigera vers le numéro <strong>+228 93 10 14 30</strong>.
               </p>
             </div>
 

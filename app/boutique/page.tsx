@@ -39,7 +39,7 @@ export default function BoutiquePage() {
               </h1>
               <div className="w-24 h-1 bg-gradient-to-r from-blue-600 to-purple-600 mx-auto rounded-full mb-4"></div>
               <p className="text-center text-gray-600 dark:text-gray-400 max-w-2xl mx-auto text-lg">
-                Découvrez nos produits et services. Cliquez sur "Commander" pour passer votre commande via WhatsApp.
+                Découvrez nos produits et services. Cliquez sur &quot;Commander&quot; pour passer votre commande via WhatsApp.
               </p>
             </div>
           </ScrollAnimation>
