@@ -74,11 +74,23 @@ async function handleSaveRequest(request: NextRequest) {
       stack: error instanceof Error ? error.stack : undefined,
     });
     
-    // S'assurer de toujours retourner du JSON valide
+    // S'assurer de toujours retourner du JSON valide avec détails
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const errorDetails = error instanceof Error ? {
+      message: errorMessage,
+      name: error.name,
+      code: (error as any)?.code,
+      constraint: (error as any)?.constraint,
+      detail: (error as any)?.detail,
+    } : { message: errorMessage };
+    
+    console.error(`API /api/content ${method} - Full error object:`, errorDetails);
+    
     return NextResponse.json(
       { 
         error: "Failed to update content",
-        details: error instanceof Error ? error.message : String(error)
+        details: errorMessage,
+        ...errorDetails,
       },
       { 
         status: 500,

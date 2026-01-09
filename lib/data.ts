@@ -550,20 +550,40 @@ export async function saveContent(content: any) {
           await client.query("DELETE FROM distinctions");
           console.log("DELETE FROM distinctions: OK");
           for (const distinction of content.distinctions) {
-            const distinctionId = distinction.id ? parseInt(distinction.id) : null;
-            console.log(`Inserting distinction: ${distinction.title} (ID: ${distinctionId}, Image: ${distinction.image || 'none'})`);
-            await client.query(
-              `INSERT INTO distinctions (id, title, description, image, date, updated_at)
-               VALUES ($1, $2, $3, $4, $5, CURRENT_TIMESTAMP)`,
-              [
-                distinctionId,
-                distinction.title || "",
-                distinction.description || null,
-                distinction.image || null,
-                distinction.date || null,
-              ]
-            );
-            console.log(`Distinction inserted successfully: ${distinction.title}`);
+            try {
+              const distinctionId = distinction.id ? parseInt(distinction.id) : null;
+              const imageValue = distinction.image || null;
+              // Vérifier la longueur de l'image si c'est base64
+              if (imageValue && imageValue.startsWith("data:image/")) {
+                const base64Length = imageValue.length;
+                console.log(`Distinction image (base64) length: ${base64Length} characters`);
+                if (base64Length > 10 * 1024 * 1024) { // 10MB en caractères base64
+                  console.warn(`Warning: Image base64 très grande (${Math.round(base64Length / 1024 / 1024)}MB)`);
+                }
+              }
+              console.log(`Inserting distinction: ${distinction.title} (ID: ${distinctionId}, Image: ${imageValue ? (imageValue.startsWith("data:") ? "base64" : "path") : 'none'})`);
+              await client.query(
+                `INSERT INTO distinctions (id, title, description, image, date, updated_at)
+                 VALUES ($1, $2, $3, $4, $5, CURRENT_TIMESTAMP)`,
+                [
+                  distinctionId,
+                  distinction.title || "",
+                  distinction.description || null,
+                  imageValue,
+                  distinction.date || null,
+                ]
+              );
+              console.log(`Distinction inserted successfully: ${distinction.title}`);
+            } catch (distinctionError) {
+              console.error(`Error inserting distinction "${distinction.title}":`, distinctionError);
+              console.error("Distinction data:", {
+                id: distinction.id,
+                title: distinction.title,
+                imageLength: distinction.image?.length || 0,
+                imageType: distinction.image?.substring(0, 50) || "none",
+              });
+              throw distinctionError;
+            }
           }
           console.log(`All ${content.distinctions.length} distinction(s) saved successfully`);
         } else {

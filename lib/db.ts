@@ -107,7 +107,7 @@ export async function initDatabase() {
       CREATE TABLE IF NOT EXISTS galerie (
         id BIGSERIAL PRIMARY KEY,
         title VARCHAR(255),
-        image VARCHAR(500) NOT NULL,
+        image TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
@@ -119,7 +119,7 @@ export async function initDatabase() {
         id BIGSERIAL PRIMARY KEY,
         name VARCHAR(255) NOT NULL,
         description TEXT,
-        logo VARCHAR(500),
+        logo TEXT,
         website VARCHAR(500),
         type VARCHAR(100),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -132,6 +132,33 @@ export async function initDatabase() {
       ALTER TABLE partenaires 
       ADD COLUMN IF NOT EXISTS type VARCHAR(100)
     `);
+    
+    // Migrate image columns from VARCHAR(500) to TEXT for base64 support
+    // This will only affect existing tables, new tables are already TEXT
+    const imageColumnsToMigrate = [
+      { table: "galerie", column: "image" },
+      { table: "partenaires", column: "logo" },
+      { table: "distinctions", column: "image" },
+      { table: "impacts", column: "image" },
+      { table: "produits", column: "image" },
+      { table: "realisations", column: "image" },
+      { table: "evenements", column: "image" },
+      { table: "blog_pubs", column: "image" },
+      { table: "blog_articles", column: "image" },
+      { table: "slides", column: "image" },
+    ];
+    
+    for (const { table, column } of imageColumnsToMigrate) {
+      try {
+        await db.query(`ALTER TABLE ${table} ALTER COLUMN ${column} TYPE TEXT`);
+        console.log(`✅ Migrated ${table}.${column} to TEXT`);
+      } catch (error: any) {
+        // Column might already be TEXT or table might not exist yet
+        if (!error.message?.includes("does not exist") && !error.message?.includes("already")) {
+          console.warn(`Could not migrate ${table}.${column} to TEXT:`, error.message);
+        }
+      }
+    }
 
     // Create blog_pubs table
     await db.query(`
